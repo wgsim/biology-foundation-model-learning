@@ -1,0 +1,22 @@
+# Python / env
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Model weights and data caches
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+data/
+.cache/
+checkpoints/
+
+# Notebook outputs from local execution tests
+*.nbconvert.ipynb

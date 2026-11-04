@@ -1,0 +1,3 @@
+# Google Colab (GPU) - 🟡 notebooks. Colab already ships torch/numpy/pandas; install the rest.
+-r base.txt
+peft

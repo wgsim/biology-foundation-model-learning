@@ -1,0 +1,21 @@
+# Mac (Apple Silicon, CPU/MPS) - 🟢 notebooks
+# Versions intentionally unpinned; after verifying notebooks run, freeze with:
+#   uv pip freeze > requirements/base.lock.txt
+torch
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+seaborn
+tqdm
+jupyterlab
+ipykernel
+nbconvert
+biopython
+transformers
+datasets
+tokenizers
+accelerate
+scanpy
+anndata

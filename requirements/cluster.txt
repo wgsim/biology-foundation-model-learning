@@ -1,0 +1,3 @@
+# Institutional GPU cluster - 🔴 notebooks / scripts
+-r colab.txt
+# CUDA-specific packages (e.g. flash-attn) are installed per cluster CUDA/toolchain; see SETUP.md.

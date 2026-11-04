@@ -6,23 +6,25 @@
 노트북 01에 **유형이 다른 assay를 하나 더** 추가하고(예: Expression 또는 Activity), 다음 중 최소 둘을 바꿔 결과가 어떻게 달라지는지 보고하라.
 - 위치 블록 크기 5 / 10 / 20
 - 훈련 샘플 수를 1/4로 줄이기
-- ESM-2 임베딩 층 선택 (마지막 층 vs 중간 층)
-- 평가 기준: ① baseline(B1, B2) 포함 표, ② random·position-block 두 split의 결과, ③ ESM 특징이 baseline을 이기는/못 이기는 조건에 대한 가설 2개 이상, ④ 한계(assay 수, 반복 수) 서술.
+- ESM-2 임베딩 층 선택 (마지막 층 vs 중간 층) — 노트북 01의 `embed(..., layer=k)`를 쓴다(`hidden_states` 인덱스, 0~층 수)
+- 평가 기준: ① baseline(B1, B2) 포함 표, ② random·position-block 두 split의 결과, ③ ESM 특징이 baseline을 이기는/못 이기는 조건에 대한 가설 2개 이상, ④ 한계(assay 수, 반복 수) 서술, ⑤ random split에서 B2가 오르는 현상을 "암기"로 단정하지 말고 **split 목적**(새 위치 일반화 vs 이미 측정된 위치의 미측정 치환 예측)에 비추어 해석.
 
 ## 과제 2 — 모델 크기와 assay 유형  *(노트북 02)*
 노트북 02에 assay를 3개 이상 추가하고(ProteinGym 참조표에서 길이 ≤ 250, 단일 치환 ≥ 1500개 기준), 모델 크기(8M→650M)에 따른 Spearman 변화를 그려라.
-- 평가 기준: ① 위치 단위 부트스트랩 신뢰구간, ② 크기가 커져도 좋아지지 않는 assay를 찾아 가설 제시, ③ BLOSUM62 baseline 대비 향상 여부를 assay별로 서술, ④ "평균 하나로 모델을 판단하면 안 되는 이유"를 본인 결과로 설명.
+- 평가 기준: ① 위치 단위 부트스트랩 신뢰구간, ② 크기가 커져도 좋아지지 않는 assay가 **있으면** 가설을 제시하고 **없으면 없다고 보고**한 뒤 신뢰구간 겹침으로 해석(추가한 assay에 따라 달라질 수 있음), ③ BLOSUM62 baseline 대비 향상 여부를 assay별로 서술, ④ "평균 하나로 모델을 판단하면 안 되는 이유"를 본인 결과로 설명.
 
 ## 과제 3 — 점수 변형과 비용  *(노트북 02)*
-masked marginal과 wild-type marginal 외에 한 가지를 더 구현하라 (예: 변이 서열의 pseudo-log-likelihood 비율, 또는 여러 마스크 위치의 평균).
-- 평가 기준: ① 세 방식의 Spearman·실행 시간 표, ② 비용 대비 성능 trade-off 서술, ③ ProteinGym 공식 점수표(웹)와 본인 수치를 비교하고 차이가 나는 이유(assay 수, 단일 치환만 사용, 버전 등) 서술.
+masked marginal과 wild-type marginal 외에 한 가지를 더 구현하라 (예: 변이 서열의 pseudo-log-likelihood(PLL) 비율, 또는 여러 마스크 위치의 평균).
+- **비용 주의**: PLL 비율은 변이 하나당 (변이 서열 L회 + wt 서열 L회)의 마스크 forward가 필요하다. 이 저장소의 측정(Mac M1 Pro, 배치 32, 서열 길이 100~250)에서 8M 모델이 초당 약 270개, 150M이 초당 약 44개 서열을 처리했으므로, 변이 2,500개 assay를 전부 하면 8M에서도 수십 분, 150M에서는 수 시간이 걸린다. **변이 100개 정도를 무작위 서브샘플링**하고 8M~35M으로 시작하라.
+- 평가 기준: ① 세 방식의 Spearman·**forward 시간**(워밍업 후 장치 동기화하여 측정) 표, ② 서브샘플 크기와 시드를 밝히고 같은 변이 집합에서 masked/wt marginal과 비교, ③ 비용 대비 성능 trade-off 서술, ④ ProteinGym 공식 점수표(웹)와 본인 수치를 비교하고 차이가 나는 이유(assay 수, 단일 치환만 사용, 버전 등) 서술.
 
 ## 과제 4 — contact  *(노트북 03)*
 다른 PDB 구조를 하나 이상 추가하고(길이 100~250, 사용자가 선택, 출처·라이선스 표기), `MIN_SEP`과 접촉 기준(Cβ 8 Å)을 바꿔 결과를 비교하라.
-- 평가 기준: ① 최소 두 설정의 precision@L/5 표(모델 크기별), ② 층별 정밀도 곡선 또는 head별 히트맵, ③ leave-one-protein-out head 선택의 낙관성 정도 서술, ④ attention 기반 점수가 지도 학습된 contact head와 다른 이유 서술.
+- 평가 기준: ① 최소 두 설정의 precision@L/5 표(모델 크기별), ② 층별 정밀도 곡선 또는 head별 히트맵, ③ **leave-one-protein-out으로 고른 head의 정밀도와 평가 단백질 내 최고 head의 정밀도 차이(낙관성 격차)를 계산**하고, 단백질 수가 적으면 leave-one-out 자체도 불확실하다는 점을 서술, ④ raw / 대칭화 / APC / 대각선 제거 보정 단계별 효과를 표로 보고, ⑤ attention 기반 비지도 점수가 지도 학습된 contact head와 다른 이유 서술.
 
 ## 과제 5 — pLDDT는 변이 효과를 알려 주는가?  *(노트북 04, Colab 🟡)*
-ProteinGym 소형 assay(예: `DN7A_SACS2_Tsuboyama_2023_1JIC`, 55 aa)에서 단일 변이 약 200개를 샘플링해 ESMFold로 접고, **평균 pLDDT 변화(변이 − wt)와 DMS 점수의 Spearman**을 구하라.
+ProteinGym 소형 assay(예: `DN7A_SACS2_Tsuboyama_2023_1JIC`, 55 aa)에서 단일 변이를 샘플링해 ESMFold로 접고, **pLDDT 변화(변이 − wt)와 DMS 점수의 Spearman**을 구하라. 전체 평균과 **변이 주변 창(±5 잔기)** 평균을 모두 계산한다.
+- **자원 계획**: 노트북 04의 시간 추정은 실제 가중치로 확인되지 않았다. 먼저 **변이 20개 파일럿**으로 서열당 시간·메모리를 측정한 뒤 목표 표본 수(약 200개)를 정하고, 자원이 부족하면 표본을 줄이되 그 사실과 신뢰구간을 보고한다.
 - 평가 기준: ① 표본 크기·샘플링 방법·신뢰구간, ② 같은 변이에 대한 ESM-2 zero-shot 점수와의 비교, ③ pLDDT가 변이 효과 예측에 유용한지에 대한 결론과 근거.
 
 ## 과제 6 — 논문 노트

@@ -48,3 +48,14 @@ python train.py
 - `requirements/base.lock.txt`: 모듈 01 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과. 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`.
 - 이후 모듈에서 패키지를 추가하면 노트북 실행 확인 후 lock 파일을 갱신한다.
 - 모델/데이터셋은 노트북 상단에 ID와 확인 날짜를 기록한다.
+
+## 5. 모듈 03 노트북 03(Enformer) 격리 환경
+`enformer-pytorch`는 `transformers==4.56.2`로 고정하므로 기본 `.venv`(transformers 5.x)에 설치하면 다른 노트북이 깨질 수 있다. 별도 환경을 만든다.
+```bash
+uv venv --python 3.12 .venv-enformer
+uv pip install --python .venv-enformer/bin/python -r requirements/enformer.txt
+.venv-enformer/bin/jupyter lab   # 이 환경의 커널로 03_enformer_tracks.ipynb 실행
+```
+- `.venv-enformer/`는 git에서 제외된다. 검증 환경: Python 3.12, torch 2.15.0, transformers 4.56.2.
+- 모듈 03 노트북 01·02는 기본 `.venv`에서 실행한다.
+- 모듈 03에서 내려받는 모델·데이터 중 **Nucleotide Transformer v1 가중치는 CC BY-NC-SA 4.0(비상업)**이다.

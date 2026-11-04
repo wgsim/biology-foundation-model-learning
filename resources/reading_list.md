@@ -73,6 +73,8 @@
 | ○ [최신] | Hingerl et al., *Flashzoi: an enhanced Borzoi for accelerated genomic analysis* (Bioinformatics 2025) | 10.1093/bioinformatics/btaf467 | ✅ PubMed |
 | ★ [벤치마크][비판] | Marin et al., *BEND: Benchmarking DNA Language Models on biologically meaningful tasks* (ICLR 2024) | arXiv:2311.12570 | ✅ Web |
 | ★ [비판] | Huang et al., *Personal transcriptome variation is poorly explained by current genomic deep learning models* (Nat Genet 2023;55:2056–2059) | 10.1038/s41588-023-01574-w | ✅ PubMed |
+| ★ [벤치마크][비판] | Benegas, Eraslan, Song, *Benchmarking DNA Sequence Models for Causal Regulatory Variant Prediction in Human Genetics* (TraitGym, bioRxiv 2025-02; HF `songlab/TraitGym`, MIT) — 매칭된 대조군, AUPRC, 모델별 사전 계산 점수 공개 | 10.1101/2025.02.11.637758 | ✅ bioRxiv |
+| ◆ [자기지도] | Benegas et al., *GPN-MSA: an alignment-based DNA language model for genome-wide variant effect prediction* (bioRxiv 2023-10) → *A DNA language model based on multispecies alignment predicts the effects of genome-wide variants* (Nat Biotechnol 2025;43:1960–1965, Brief Communication) | 10.1038/s41587-024-02511-w | ✅ Web |
 
 > 토론 포인트: Enformer·Borzoi 같은 **지도학습** 모델과 DNABERT·NT·Evo 같은 **자기지도 사전학습** 모델은 학습 목적이 다르다. 규모만으로 같은 범주에서 순위를 매기지 말 것.
 

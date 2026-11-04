@@ -1,0 +1,11 @@
+# Isolated environment for 03_dna_genome/notebooks/03_enformer_tracks.ipynb  (create with: uv venv --python 3.12 .venv-enformer)
+# enformer-pytorch pins transformers==4.56.2, so it must NOT be installed into the main .venv (transformers 5.x).
+# Install:  uv pip install --python .venv-enformer/bin/python -r requirements/enformer.txt
+torch
+numpy
+pandas
+matplotlib
+enformer-pytorch
+ipykernel
+nbconvert
+nbformat

@@ -8,7 +8,7 @@
 
 **A1.** 길이 L인 시퀀스에서 표준 self-attention의 시간 복잡도와 attention map 메모리 복잡도는?
 <details><summary>답</summary>
-시간 O(L²·d), attention map 메모리 O(L²). FlashAttention 계열은 정확한(exact) attention을 유지하면서 메모리 접근을 줄여 메모리 사용을 선형에 가깝게 만들지만, 연산량 자체는 여전히 L²에 비례한다.
+attention 연산의 시간 O(L²·d), attention map 메모리 O(L²) (레이어 전체로는 Q·K·V 선형 투영 비용 O(L·d²)가 더해져 O(L²d + Ld²); 긴 시퀀스 L ≫ d에서 L² 항이 지배). FlashAttention 계열은 정확한(exact) attention을 유지하면서 메모리 접근을 줄여 메모리 사용을 선형에 가깝게 만들지만, 연산량 자체는 여전히 L²에 비례한다.
 </details>
 
 **A2.** BERT식 masked language modeling(MLM)과 자기회귀(causal) 언어모델의 차이와, 각각이 자연스럽게 맞는 생물학 과제는?
@@ -18,7 +18,7 @@ MLM은 가려진 토큰을 양방향 문맥으로 예측 → 임베딩 추출, �
 
 **A3.** Perplexity의 정의와, 토크나이저가 다른 두 모델의 perplexity를 직접 비교하면 안 되는 이유는?
 <details><summary>답</summary>
-perplexity = exp(토큰당 평균 음의 로그우도). 토큰 단위가 다르면(단일 뉴클레오타이드 vs k-mer vs BPE) "토큰 하나"가 담는 정보량이 달라 값을 직접 비교할 수 없다. 비교하려면 염기/잔기 단위로 환산(bits per base 등)해야 한다.
+perplexity = exp(토큰당 평균 음의 로그우도). 토큰 단위가 다르면(단일 뉴클레오타이드 vs k-mer vs BPE) "토큰 하나"가 담는 정보량이 달라 값을 직접 비교할 수 없다. 비교하려면 염기/잔기 단위로 환산(bits per base 등)해야 한다. 단, 환산만으로 항상 공정해지지는 않는다: 같은 서열·같은 평가 범위·같은 확률 정의여야 하며, MLM의 masked/pseudo-likelihood와 자기회귀 모델의 정규화된 서열 likelihood는 서로 다른 양이다.
 </details>
 
 **A4.** LoRA는 무엇을 고정하고 무엇을 학습하는가?
@@ -33,7 +33,7 @@ Probe는 표현을 고정하고 그 위에 선형 층만 학습 → 표현에 �
 
 **A6.** 생물학 서열 데이터에서 random train/test split이 성능을 과대평가하는 이유는?
 <details><summary>답</summary>
-서열은 진화적으로 서로 관련(상동)되어 i.i.d.가 아니다. random split이면 테스트 서열의 가까운 친척이 훈련 세트에 들어 있어 모델이 "외우기"만 해도 높은 점수가 나온다(누출). 이 과정 모듈 01에서 직접 실험한다.
+서열은 진화적으로 서로 관련(상동)되어 서로 독립적인 표본이 아니다. random split이면 테스트 서열의 가까운 친척이 훈련 세트에 들어 있어 모델이 새 가족이 아닌 "아는 가족의 새 구성원"에서 점수를 얻는다(기억만으로도 높은 점수가 가능). 새 가족에 대한 일반화가 목표일 때 과대평가이며, 알려진 가족의 새 구성원 예측이 목적이라면 그 목적에는 맞는 평가일 수 있다. 이 과정 모듈 01에서 직접 실험한다.
 </details>
 
 **A7.** Pearson과 Spearman 상관의 차이, 변이 효과 예측 벤치마크에서 Spearman을 자주 쓰는 이유는?
@@ -67,7 +67,7 @@ bf16은 지수부가 fp32와 같아 표현 가능한 범위가 넓어 loss scali
 
 **B2.** 5'-ATGC-3'의 reverse complement는? DNA 모델 설계에서 이것이 왜 중요한가?
 <details><summary>답</summary>
-5'-GCAT-3'. DNA는 이중가닥이라 어느 가닥에서 읽든 같은 생물학적 정보를 가진다. 그래서 일부 모델은 reverse-complement 데이터 증강 또는 RC equivariance를 구조에 넣는다(예: Caduceus — reading_list 03).
+5'-GCAT-3'. 두 서열은 같은 이중가닥 분자를 두 가닥에서 읽은 대체 표현이다. 그래서 일부 모델은 reverse-complement 데이터 증강 또는 RC equivariance를 구조에 넣는다(예: Caduceus — reading_list 03). 단, 전사 방향이나 strand-specific 과제처럼 **가닥 방향이 중요한 과제**에서는 두 서열을 동일하게 취급하면 안 된다.
 </details>
 
 **B3.** 다중 서열 정렬(MSA)의 공진화 신호가 단백질 잔기 접촉(contact) 예측에 쓰이는 이유는?

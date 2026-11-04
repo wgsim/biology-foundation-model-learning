@@ -7,7 +7,7 @@
 # uv 설치 여부 확인 (없으면 https://docs.astral.sh/uv/ 참고)
 uv --version
 
-uv venv .venv
+uv venv --python 3.12 .venv      # 3.12에서 base.txt 설치와 모듈 01 노트북 실행을 확인함 (시스템 Python 3.15는 미시도)
 source .venv/bin/activate
 uv pip install -r requirements/base.txt
 python -m ipykernel install --user --name bio-fm
@@ -45,5 +45,6 @@ python train.py
 `flash-attn` 등 CUDA 의존 패키지는 클러스터의 CUDA/컴파일러 버전에 맞춰 개별 설치한다.
 
 ## 4. 재현성
-- 노트북 실행이 검증되면 `uv pip freeze > requirements/base.lock.txt`로 버전을 고정한다.
+- `requirements/base.lock.txt`: 모듈 01 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과. 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`.
+- 이후 모듈에서 패키지를 추가하면 노트북 실행 확인 후 lock 파일을 갱신한다.
 - 모델/데이터셋은 노트북 상단에 ID와 확인 날짜를 기록한다.

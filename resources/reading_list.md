@@ -34,7 +34,8 @@
 | ★ | Lin et al., *Evolutionary-scale prediction of atomic-level protein structure with a language model* (ESM-2/ESMFold, Science 2023) | 10.1126/science.ade2574 | ✅ PubMed |
 | ★ | Meier et al., *Language models enable zero-shot prediction of the effects of mutations on protein function* (ESM-1v) — bioRxiv 2021 / NeurIPS 2021(Advances in Neural Information Processing Systems 34) 학회판 | 10.1101/2021.07.09.450648 | ✅ bioRxiv · ✅ Web |
 | ◆ [비교] | Elnaggar et al., *ProtTrans* (IEEE TPAMI 2022) — ESM과 학습·데이터 선택 비교용 | 10.1109/TPAMI.2021.3095381 | ✅ PubMed |
-| ○ [최신] | EvolutionaryScale, *ESM Cambrian (ESM C)* — 2024-12 공개, 300M/600M 체크포인트. **동료심사 논문 없음**(기술 블로그·모델 카드). 가중치 라이선스가 모델·시점별로 다를 수 있어 사용 전 확인 | evolutionaryscale.ai/blog/esm-cambrian | ✅ Web (블로그·HF 카드) |
+| ○ [최신] | EvolutionaryScale/Biohub, *ESM Cambrian (ESM C)* — 2024-12 공개. HF `biohub/ESMC-300M`·`ESMC-600M`(2026-09 갱신, 라이선스 표기 `mit`+`other`)이며 `transformers`에 ESMC 문서가 있음. **동료심사 논문 없음**(기술 블로그·모델 카드). 가중치 라이선스는 모델·시점별로 달라질 수 있어 사용 전 모델 카드 확인 | evolutionaryscale.ai/blog/esm-cambrian · huggingface.co/biohub/ESMC-600M | ✅ Web (블로그·HF 카드) |
+| ○ [최신] | Candido et al., *Language Modeling Materializes a World Model of Protein Biology* (bioRxiv 2026-06; Biohub, 교신 A. Rives) — ESMFold2의 근거 프리프린트. 모델 카드: 모든 생체분자(소분자·핵산 포함) 예측, MSA 선택 사용, 가중치 약 27 GB. 성능 주장은 저자 보고 | 10.64898/2026.06.03.729735 | ✅ bioRxiv |
 | ★ | Jumper et al., *Highly accurate protein structure prediction with AlphaFold* (Nature 2021) | 10.1038/s41586-021-03819-2 | ✅ PubMed |
 | ★ | Abramson et al., *Accurate structure prediction of biomolecular interactions with AlphaFold 3* (Nature 2024) — **Addendum**(10.1038/s41586-024-08416-7, ✅ PubMed)를 본문과 함께 읽기 | 10.1038/s41586-024-07487-w | ✅ PubMed |
 | ◆ | Hayes et al., *Simulating 500 million years of evolution with a language model* (ESM3, Science 2025) | 10.1126/science.ads0018 | ✅ PubMed |
@@ -126,7 +127,7 @@
 ## 남은 불확실성 (⚠️)
 - ⚠️ ESM C: 동료심사 논문이 확인되지 않음(블로그·모델 카드만). 라이선스 변동 가능.
 - ⚠️ FlashAttention: arXiv ID·저자는 확인했으나 NeurIPS 2022 게재 여부는 검색에서 직접 확인되지 않음.
-- ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni: 프리프린트 상태만 확인. 저널 게재판은 못 찾음(없다는 뜻은 아님).
+- ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni, ESMFold2 프리프린트: 프리프린트 상태만 확인. 저널 게재판은 못 찾음(없다는 뜻은 아님).
 - ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론 미확인.
 - ⚠️ Uni-Mol: DOI 없음(OpenReview 기준 인용).
 - ⚠️ Chai-1: 사전판 게시일이 출처마다 하루 차이(10/10 vs 10/11); DOI로 인용.

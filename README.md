@@ -32,9 +32,11 @@
 ## 각 모듈 구성
 `README.md`(강의노트) · `notebooks/`(실습) · `exercises.md`(과제)
 
+모듈마다 산출물 1개(단순 baseline 재현 / split 변경 효과 확인 / 동결 표현 vs 미세조정 비교 중 하나)와 데이터 누출 점검 항목을 포함한다. 자세한 내용은 [resources/reading_list.md](resources/reading_list.md)의 운영 메모 참고.
+
 ## 진행 상태
 - [x] 스캐폴드
-- [x] 1차 문헌 검증 및 `resources/reading_list.md` (모듈별 추가 검증은 모듈 작성 시)
+- [x] 1차 문헌 검증 및 `resources/reading_list.md` (v2: Codex·agy 교차 검토 반영)
 - [ ] 모듈 00–07 작성
 
 > 최신 모델·논문 정보는 작성 시 문헌 DB로 확인하며, 확인되지 않은 항목은 `⚠️ 미검증`으로 표시한다.

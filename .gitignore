@@ -20,3 +20,6 @@ checkpoints/
 
 # Notebook outputs from local execution tests
 *.nbconvert.ipynb
+
+# Tool logs (model-bridge MCP)
+.model_bridge/

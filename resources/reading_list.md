@@ -7,6 +7,7 @@
 - ✅ PubMed: PubMed 메타데이터(제목·저널·연도·DOI)로 확인
 - ✅ bioRxiv: bioRxiv API로 확인 (프리프린트 — 동료심사 전 버전일 수 있음)
 - ✅ Web: 웹 검색 결과에서 제목·저자·ID 확인 (arXiv·학회 논문집 등, PubMed 미색인)
+- ✅ Crossref: Crossref API로 제목·저널·권·쪽·연도 확인 (PubMed 조회가 일시 실패했을 때 사용; 초록 수준 서술 확인은 Semantic Scholar 초록)
 - ⚠️ 미검증: 확인되지 않음. 사용 전 직접 확인할 것
 
 **필수도** (최신성·성격과 분리, 필수도 배정은 작성자 판단 + 검토 모델 의견): ★ 필수 · ◆ 심화 · ○ 선택(트랙/관심 시)
@@ -82,6 +83,10 @@
 | 필수도 | 논문 | 출처 / DOI | 검증 |
 |---|---|---|---|
 | ★ [기준선] | Lopez et al., *Deep generative modeling for single-cell transcriptomics* (scVI, Nat Methods 2018;15:1053–1058) | 10.1038/s41592-018-0229-2 | ✅ PubMed |
+| ○ [기준선][실습] | Korsunsky et al., *Fast, sensitive and accurate integration of single-cell data with Harmony* (Nat Methods 2019;16:1289–1296) — 노트북 02의 배치 보정 baseline | 10.1038/s41592-019-0619-0 | ✅ Crossref |
+| ○ [벤치마크][실습] | Luecken et al., *Benchmarking atlas-level data integration in single-cell genomics* (scib, Nat Methods 2022;19:41–50, online 2021) — ASW 등 통합 지표의 정의 | 10.1038/s41592-021-01336-8 | ✅ Crossref |
+| ○ [데이터][실습] | Wilk et al., *A single-cell atlas of the peripheral immune response in patients with severe COVID-19* (Nat Med 2020;26:1070–1076) — 모듈 04 노트북의 PBMC 데이터(CELLxGENE 배포판, 13명). 2020 데이터라 사전학습 코퍼스 포함 여부 미확인 | 10.1038/s41591-020-0944-y | ✅ Crossref |
+| ○ [모델 카드] | Geneformer 모델 카드 (Hugging Face `ctheodoris/Geneformer`): V1-10M(≈3천만 세포, 입력 2,048) / V2-104M·316M(≈1억 세포, 입력 4,096). 노트북은 커밋 `1f7fbae4` 고정 | huggingface.co/ctheodoris/Geneformer | ✅ Web |
 | ○ | Yang et al., *scBERT as a large-scale pretrained deep language model for cell type annotation of single-cell RNA-seq data* (Nat Mach Intell 2022;4:852–866; bioRxiv 10.1101/2021.12.05.471261) — 초기 기준점. 2024-12 Matters Arising(이의 논평) 존재 보고됨, 내용 미확인 | 10.1038/s42256-022-00534-z | ✅ Web |
 | ★ | Theodoris et al., *Transfer learning enables predictions in network biology* (Geneformer, Nature 2023) | 10.1038/s41586-023-06139-9 | ✅ PubMed |
 | ★ | Cui et al., *scGPT* (Nat Methods 2024) | 10.1038/s41592-024-02201-0 | ✅ PubMed |

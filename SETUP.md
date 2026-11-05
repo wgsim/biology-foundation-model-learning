@@ -45,7 +45,7 @@ python train.py
 `flash-attn` 등 CUDA 의존 패키지는 클러스터의 CUDA/컴파일러 버전에 맞춰 개별 설치한다.
 
 ## 4. 재현성
-- `requirements/base.lock.txt`: 모듈 01~04 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과 (모듈 04에서 `harmonypy`, `scvi-tools` 등 22개 패키지 추가, 기존 패키지 버전 변경 없음). 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`.
+- `requirements/base.lock.txt`: 모듈 01~05 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과 (모듈 04에서 `harmonypy`, `scvi-tools` 등 22개 패키지, 모듈 05에서 `rdkit` 추가, 기존 패키지 버전 변경 없음). 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`.
 - 이후 모듈에서 패키지를 추가하면 노트북 실행 확인 후 lock 파일을 갱신한다.
 - 모델/데이터셋은 노트북 상단에 ID와 확인 날짜를 기록한다.
 

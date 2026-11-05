@@ -1,6 +1,6 @@
 # Reading List
 
-작성/갱신: 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
+작성/갱신: 2026-11-05 (v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
 
 ## 범례
 **검증 상태**
@@ -119,6 +119,24 @@
 | ○ [에이전트] | Huang et al., *Biomni: A General-Purpose Biomedical AI Agent* (bioRxiv 2025-06) | 10.1101/2025.05.30.656746 | ✅ Web |
 | ○ [LLM] | Luo et al., *BioGPT: generative pre-trained transformer for biomedical text generation and mining* (Brief Bioinform 2022;23(6); arXiv:2210.10341) | 10.1093/bib/bbac409 | ✅ Web |
 
+| ★ [벤치마크][분자] | Wu et al., *MoleculeNet: a benchmark for molecular machine learning* (Chem Sci 2018;9:513–530) — 노트북 05-01의 데이터 모음 | 10.1039/c7sc02664a | ✅ Crossref |
+| ◆ [기준선][분자] | Rogers & Hahn, *Extended-Connectivity Fingerprints* (J Chem Inf Model 2010;50:742–754) — ECFP | 10.1021/ci100050t | ✅ Crossref |
+| ○ [split][분자] | Bemis & Murcko, *The Properties of Known Drugs. 1. Molecular Frameworks* (J Med Chem 1996;39:2887–2893) — scaffold 정의 | 10.1021/jm9602928 | ✅ Crossref |
+| ○ [split][분자] | Sheridan, *Time-Split Cross-Validation as a Method for Estimating the Goodness of Prospective Prediction* (J Chem Inf Model 2013;53:783–790) | 10.1021/ci400084k | ✅ Crossref |
+| ◆ [기준선][분자] | Yang et al., *Analyzing Learned Molecular Representations for Property Prediction* (J Chem Inf Model 2019;59:3370–3388; Chemprop) | 10.1021/acs.jcim.9b00237 | ✅ Crossref |
+| ◆ [화학] | Ahmad, Simon, Chithrananda, Grand et al., *ChemBERTa-2: Towards Chemical Foundation Models* (2022; 학술지 게재 여부 미확인) — MLM/MTR 사전학습, 77M 분자 | arXiv:2209.01712 | ✅ Web |
+| ★ [비판][분자][최신] | Praski, Adamczyk, Czech, *Benchmarking Pretrained Molecular Embedding Models For Molecular Representation Learning* (2025; 프리프린트) — 초록: 28개 모델·25개 분류 데이터셋에서 한 모델(CheMeleon)을 제외하고는 ECFP count 지문을 넘지 못했다고 보고 | arXiv:2508.06199 | ✅ Web |
+| ◆ [비판][split][분자] | Guo, Hernandez-Hernandez, Ballester, *Scaffold Splits Overestimate Virtual Screening Performance* (2024; 프리프린트) — scaffold가 다른 분자도 서로 비슷해 train·test 유사도가 여전히 높다고 보고 | arXiv:2406.00873 | ✅ Web |
+| ○ [비판][분자] | Jiang et al., *Could graph neural networks learn better molecular representation for drug discovery? A comparison study of descriptor-based and graph-based models* (J Cheminform 2021;13) | 10.1186/s13321-020-00479-8 | ✅ Crossref |
+| ○ [데이터][분자] | Delaney, *ESOL: Estimating Aqueous Solubility Directly from Molecular Structure* (J Chem Inf Comput Sci 2004;44:1000–1005) · Martins et al., *A Bayesian Approach to in Silico Blood-Brain Barrier Penetration Modeling* (J Chem Inf Model 2012;52:1686–1697) | 10.1021/ci034243x · 10.1021/ci300124c | ✅ Crossref |
+| ◆ [멀티모달][비판] | Liang, Zhang, Kwon, Yeung, Zou, *Mind the Gap: Understanding the Modality Gap in Multi-modal Contrastive Representation Learning* (NeurIPS 2022, Advances in Neural Information Processing Systems 35:17612–17625) — modality gap | 10.52202/068431-1280 | ✅ Crossref |
+| ◆ [멀티모달: 단백질–텍스트] | Xu, Yuan, Miret, Tang, *ProtST: Multi-Modality Learning of Protein Sequences and Biomedical Texts* (2023; 학회 게재처는 직접 확인 안 됨) | arXiv:2301.12040 | ✅ Web |
+| ○ [멀티모달: 단백질–텍스트] | *ProTrek: Navigating the Protein Universe through Tri-Modal Contrastive Learning* (bioRxiv 2024; 저자·저널판 미확인) | 10.1101/2024.05.30.596740 | ✅ Crossref |
+| ○ [멀티모달: 세포–텍스트] | *Multimodal learning of transcriptomes and text enables interactive single-cell RNA-seq data exploration with natural language* (CellWhisperer, bioRxiv 2024; 저널판 미확인) | 10.1101/2024.10.15.618501 | ✅ Crossref |
+| ◆ [비판][병리][최신] | de Jong, Marcus, Teuwen, *Current Pathology Foundation Models are unrobust to Medical Center Differences* (2025; 프리프린트) — 초록: 평가한 공개 병리 FM 10개가 모두 의료기관 신호를 강하게 표현했다고 보고 | arXiv:2501.18055 | ✅ Web |
+| ○ [병리] | Vorontsov et al., *A foundation model for clinical-grade computational pathology and rare cancers detection* (Virchow, Nat Med 2024;30:2924–2935) · Xu et al., *A whole-slide foundation model for digital pathology from real-world data* (Prov-GigaPath, Nature 2024;630:181–188) | 10.1038/s41591-024-03141-0 · 10.1038/s41586-024-07441-w | ✅ Crossref |
+| ○ [에이전트][벤치마크] | Laurent et al., *LAB-Bench: Measuring Capabilities of Language Models for Biology Research* (2024; 프리프린트) — 연구 실무형 객관식 2,400문항 이상 | arXiv:2407.10362 | ✅ Web |
+
 > 에이전트 항목은 모델 성능이 아니라 **도구 사용·에이전트 평가**를 다룬다. 구분해서 읽을 것.
 
 ## 06 Advanced — 해석 · 효율화
@@ -138,6 +156,7 @@
 - ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론 미확인.
 - ⚠️ Uni-Mol: DOI 없음(OpenReview 기준 인용).
 - ⚠️ Chai-1: 사전판 게시일이 출처마다 하루 차이(10/10 vs 10/11); DOI로 인용.
+- ⚠️ 모듈 05: ChemBERTa-2·ProtST·Praski·Guo·de Jong·LAB-Bench는 arXiv 수준(초록)만 확인, 학술지/학회 게재 여부 미확인. ProTrek·CellWhisperer는 제목·DOI만 확인(저자·저널판 미확인). UNI/CONCH/UNI2-h·Virchow·Prov-GigaPath 가중치는 Hugging Face에서 접근 승인(gated)이 필요하다(HF 메타데이터 `gated=auto` 기준; 라이선스 UNI/CONCH는 cc-by-nc-nd-4.0로 표기). 이 저장소의 노트북은 이들을 쓰지 않는다.
 
 ## 운영 메모 (교차 검토 반영)
 - 읽기만으로는 18주에 전문가 수준에 닿기 어렵다. **모듈마다 산출물 1개**: (a) 단순 baseline 재현, (b) split 변경 효과 확인, (c) 동결 표현 vs 미세조정 비교 중 하나.

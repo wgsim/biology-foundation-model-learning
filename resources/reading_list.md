@@ -1,6 +1,6 @@
 # Reading List
 
-작성/갱신: 2026-11-05 (v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
+작성/갱신: 2026-11-05 (v5: 모듈 06 읽기 목록 추가 · v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
 
 ## 범례
 **검증 상태**
@@ -139,11 +139,21 @@
 
 > 에이전트 항목은 모델 성능이 아니라 **도구 사용·에이전트 평가**를 다룬다. 구분해서 읽을 것.
 
-## 06 Advanced — 해석 · 효율화
+## 06 Advanced — 적응 · 해석 · 효율화 · 벤치마크 · 책임성
 | 필수도 | 논문 | 출처 / DOI | 검증 |
 |---|---|---|---|
 | ◆ [최신][해석] | Simon & Zou, *InterPLM: discovering interpretable features in protein language models via sparse autoencoders* (ESM-2 SAE, Nat Methods 2025;22:2107–2117; 사전판 bioRxiv 10.1101/2024.11.14.623630 · arXiv:2412.12101) | 10.1038/s41592-025-02836-7 | ✅ PubMed |
-| ◆ [효율화] | Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness* (2022; 학회 게재처는 검색에서 직접 확인 안 됨) | arXiv:2205.14135 | ✅ Web |
+| ◆ [효율화] | Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness* (NeurIPS 2022, Advances in Neural Information Processing Systems 35:16344–16359; arXiv:2205.14135) | 10.52202/068431-1189 | ✅ Crossref |
+| ★ [적응] | Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models* (2021; 초록: 사전학습 가중치를 고정하고 각 층에 학습 가능한 저랭크 분해 행렬을 주입, GPT-3 175B에서 학습 매개변수 1만 분의 1·GPU 메모리 3분의 1 보고) | arXiv:2106.09685 | ✅ Web |
+| ◆ [적응][비판] | Biderman et al., *LoRA Learns Less and Forgets Less* (2024; 초록: 프로그래밍·수학 도메인의 LLM에서 표준 저랭크 설정의 LoRA가 전체 파인튜닝보다 크게 못 미치지만 대상 도메인 밖 성능은 더 잘 보존한다고 보고 — **LLM 설정**의 결과) | arXiv:2405.09673 | ✅ Web |
+| ◆ [적응][단백질] | Sledzieski et al., *Democratizing protein language models with parameter-efficient fine-tuning* (PNAS 2024;121; 사전판 bioRxiv 10.1101/2023.11.09.566187) — 제목 수준만 확인 | 10.1073/pnas.2405840121 | ✅ Crossref |
+| ◆ [해석] | Cunningham et al., *Sparse Autoencoders Find Highly Interpretable Features in Language Models* (2023; 초록: 다의성(polysemanticity)의 원인으로 superposition을 가정하고 SAE로 더 해석 가능하고 단의적인 특징을 찾는다고 보고) | arXiv:2309.08600 | ✅ Web |
+| ◆ [해석] | Gao et al., *Scaling and evaluating sparse autoencoders* (2024; 초록: k-sparse(TopK) 오토인코더로 희소도를 직접 제어, 죽은 잠재 변수를 줄이는 수정, 사전 크기·희소도에 대한 스케일링 법칙, 특징 품질 평가 지표) | arXiv:2406.04093 | ✅ Web |
+| ◆ [효율화] | Micikevicius et al., *Mixed Precision Training* (2017; 초록: 반정밀도로 학습하되 단정밀도 가중치 사본과 손실 스케일링 사용) | arXiv:1710.03740 | ✅ Web |
+| ○ [효율화][분산] | Rajbhandari et al., *ZeRO: Memory Optimizations Toward Training Trillion Parameter Models* (2019) · Zhao et al., *PyTorch FSDP: Experiences on Scaling Fully Sharded Data Parallel* (2023) — 제목 수준만 확인 | arXiv:1910.02054 · arXiv:2304.11277 | ✅ Web |
+| ○ [벤치마크][비판] | Raji et al., *AI and the Everything in the Whole Wide World Benchmark* (2021) — 제목 수준만 확인 | arXiv:2111.15366 | ✅ Web |
+| ★ [책임성] | Baker & Church, *Protein design meets biosecurity* (Science 2024;383:349) — 제목 수준만 확인(짧은 글) | 10.1126/science.ado1671 | ✅ Crossref |
+| ◆ [책임성] | Sandbrink, *Artificial intelligence and biological misuse: Differentiating risks of language models and biological design tools* (2023; 초록: LLM은 비전문가의 장벽을 낮추고 생물 설계 도구(BDT)는 숙련된 행위자의 능력을 넓힐 수 있다고 구분) | arXiv:2306.13952 | ✅ Web |
 
 (검증·분할 관련 필독은 01의 DOME·MMseqs2, 벤치마크는 02·03의 TAPE/FLIP/PEER/BEND 참고.)
 
@@ -151,7 +161,7 @@
 
 ## 남은 불확실성 (⚠️)
 - ⚠️ ESM C: 동료심사 논문이 확인되지 않음(블로그·모델 카드만). 라이선스 변동 가능.
-- ⚠️ FlashAttention: arXiv ID·저자는 확인했으나 NeurIPS 2022 게재 여부는 검색에서 직접 확인되지 않음.
+- 모듈 06 읽기 목록: Sledzieski·ZeRO·FSDP·Raji·Baker & Church는 제목·서지 수준만 확인(초록 미확인). LoRA·SAE·혼합 정밀도·Biderman·Sandbrink는 arXiv 초록까지 확인, 학회/학술지 게재 여부는 미확인(FlashAttention은 NeurIPS 2022 게재를 Crossref로 확인).
 - ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni, ESMFold2 프리프린트: 프리프린트 상태만 확인. 저널 게재판은 못 찾음(없다는 뜻은 아님).
 - ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론 미확인.
 - ⚠️ Uni-Mol: DOI 없음(OpenReview 기준 인용).

@@ -23,3 +23,4 @@ harmonypy          # module 04: batch-correction baseline
 scvi-tools         # module 04: scVI baseline (installs lightning, pyro, etc.)
 scikit-misc        # module 04: scanpy seurat_v3 HVG
 rdkit             # module 05: ECFP/RDKit descriptors, scaffold splits
+peft              # module 06: LoRA fine-tuning

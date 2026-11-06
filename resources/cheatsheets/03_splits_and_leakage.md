@@ -14,7 +14,7 @@
 | 병리 이미지 | 같은 의료기관/슬라이드의 패치 | 환자 / 기관 | 기관 신호 선형 분리 가능성 | 모듈 05 (읽기) |
 | 사전학습 ↔ 평가 | 평가 데이터가 사전학습 코퍼스에 있음 | (분할 불가) | 중복 조회, 못 하면 한계로 기재 | 전 모듈 |
 
-**공통**: ① 같은 서열·분자·텍스트는 **분할 전에** 병합한다(모듈 05: 중복 서열 33개가 train과 test에 걸쳤다). ② 설정(층·에폭·임계값)은 test로 고르지 않는다. ③ 표준화·PCA·특징 선택은 학습 접힘 안에서만 적합한다.
+**공통**: ① 같은 서열·분자·텍스트는 **분할 전에** 한 항목으로 묶는다 — 병합하거나 같은 쪽에 넣는다(모듈 05: 중복 서열 33개가 train과 test에 걸쳤다). 병합할 때 라벨이 충돌하면 처리 규칙을 적는다(측정값은 assay·단위가 호환되는지 확인한 뒤 합친다). ② 설정(층·에폭·임계값)은 test로 고르지 않는다. ③ 표준화·PCA·특징 선택은 학습 접힘 안에서만 적합한다.
 
 ## 2. 위치 블록 분할 + 누출 수치 (변이 데이터)
 ```python
@@ -28,22 +28,23 @@ pos = rng.integers(1, L + 1, size=1000)                  # 변이 1000개의 위
 def block_groups(pos, block=10):
     return (np.asarray(pos) - 1) // block               # 연속 `block`개 위치가 한 그룹
 
-def leakage_report(pos, train_idx, test_idx):
+def leakage_report(pos, groups, train_idx, test_idx):
+    """groups: 분할에 실제로 쓴 그룹 배열 (무작위 분할이면 행마다 하나)."""
     tr_pos, te_pos = set(pos[train_idx]), pos[test_idx]
     in_train = float(np.mean([p in tr_pos for p in te_pos]))
     trp = np.array(sorted(tr_pos))
     dist = np.array([np.abs(trp - p).min() for p in te_pos])
     return dict(test_frac=len(test_idx) / (len(train_idx) + len(test_idx)),
                 test_pos_in_train=in_train, median_dist_to_train=float(np.median(dist)),
-                n_test_groups=len(np.unique(block_groups(pos[test_idx]))))
+                n_test_positions=len(set(te_pos)), n_test_groups=len(np.unique(np.asarray(groups)[test_idx])))
 
 idx = np.arange(len(pos))
 # (a) 무작위 분할: 같은 위치의 다른 치환이 train에 있다
 tr, te = GroupShuffleSplit(1, test_size=0.2, random_state=0).split(idx, groups=idx).__next__()
-rand = leakage_report(pos, tr, te)
+rand = leakage_report(pos, idx, tr, te)
 # (b) 위치 블록 분할
 tr, te = GroupShuffleSplit(1, test_size=0.2, random_state=0).split(idx, groups=block_groups(pos)).__next__()
-blk = leakage_report(pos, tr, te)
+blk = leakage_report(pos, block_groups(pos), tr, te)
 assert rand["test_pos_in_train"] > 0.95 and blk["test_pos_in_train"] == 0.0
 assert blk["median_dist_to_train"] >= 1
 print("random:", {k: round(v, 2) for k, v in rand.items()})
@@ -51,13 +52,13 @@ print("block :", {k: round(v, 2) for k, v in blk.items()})
 ```
 - 블록 분할은 *같은 위치* 경로를 막지만 **인접 위치**(거리 수 칸)와 **같은 치환 유형**은 여전히 train에 있다. 막지 못한 경로를 보고서에 적는다.
 - test 비율이 목표(20%)와 다를 수 있다(블록 크기가 균일하지 않을 때). 실제 비율을 보고한다.
-- **test 군집(블록) 수가 2~3개면** 그룹 부트스트랩은 무의미하다 → 치트시트 02 §6.
+- 출력의 `n_test_groups`는 *분할에 쓴 그룹*의 수다(무작위 분할은 행마다 그룹이라 test 행 수와 같다). **test 군집(블록) 수가 2~3개면** 그룹 부트스트랩은 무의미하다 → 치트시트 02 §6.
 - 블록이 너무 크면 그룹이 적어 내부 CV(`GroupKFold`)가 성립하지 않는다 (길이 55 단백질에서 블록 15는 그룹이 4개뿐이었다).
 
 ## 3. 서열 클러스터로 분할 (MMseqs2 → 그룹)
 ```bash
 # 실행하지 않음 (mmseqs 미설치). 옵션은 MMseqs2 공식 README/위키 기준.
-mmseqs easy-cluster seqs.fasta clusterRes tmp --min-seq-id 0.3 -c 0.8 --cov-mode 1
+mmseqs easy-cluster seqs.fasta clusterRes tmp --min-seq-id 0.3 -c 0.8 --cov-mode 0
 # 출력: clusterRes_cluster.tsv  (각 줄: 대표 서열 <TAB> 구성원)
 ```
 ```python
@@ -74,7 +75,8 @@ tr, te = GroupShuffleSplit(1, test_size=0.4, random_state=1).split(seq_ids, grou
 assert set(groups[tr]).isdisjoint(set(groups[te]))      # 같은 클러스터는 한쪽에만
 print("train", [seq_ids[i] for i in tr], "| test", [seq_ids[i] for i in te])
 ```
-- 임계값(`--min-seq-id`)이 느슨할수록 보수적이다. **임계값과 coverage 옵션을 보고한다**.
+- `--min-seq-id`가 **낮을수록**(예: 0.3 < 0.9) 큰 클러스터가 생겨 분할이 더 엄격하다. **임계값과 coverage 옵션(`-c`, `--cov-mode`)을 보고한다**.
+- `--cov-mode 0`은 질의·표적 양쪽의 coverage를 요구해 전장 단백질에 맞고, `--cov-mode 1`(표적 coverage)은 단편에 맞는다(공식 위키 FAQ 요약). 전장 단백질 분할에 모드 1을 쓰면 짧은 서열이 긴 서열에 흡수되는 반면, 같은 도메인을 공유하는 긴 서열끼리는 따로 남아 **도메인 수준 누출**이 생길 수 있다†.
 - 대표 서열 기반 클러스터링은 *서로 다른 클러스터의 서열 쌍도 임계값 이상으로 유사*할 수 있다. 엄격한 분리가 필요하면 분할 뒤 test→train 최대 동일도를 검색으로 직접 확인한다 (모듈 01 §5).
 
 ## 4. Scaffold 분할 + 최근접 유사도 (분자)
@@ -87,25 +89,29 @@ RDLogger.DisableLog("rdApp.*")
 smiles = ["c1ccccc1CC", "c1ccccc1CCC", "c1ccccc1O", "C1CCNCC1CC", "C1CCNCC1O", "c1ccc2ccccc2c1C", "c1ccc2ccccc2c1N", "CCO", "CCN", "CC(=O)O"]
 mols = [Chem.MolFromSmiles(s) for s in smiles]
 scaf = [MurckoScaffold.MurckoScaffoldSmiles(mol=m) for m in mols]
+# 고리가 없는 분자는 골격이 빈 문자열이다 → 하나의 거대 그룹이 되지 않게 분자마다 자기 그룹을 준다 (모듈 05)
+group = [s if s else f"__acyclic_{i}" for i, s in enumerate(scaf)]
 
 # scaffold 단위로 그룹을 만들어 큰 그룹부터 train에 채우고 나머지를 test로
 from collections import defaultdict
 by_scaf = defaultdict(list)
-for i, s in enumerate(scaf):
+for i, s in enumerate(group):
     by_scaf[s].append(i)
 order = sorted(by_scaf.values(), key=len, reverse=True)
 train, test = [], []
 for g in order:
     (train if len(train) + len(g) <= 0.7 * len(smiles) else test).extend(g)
-assert set(scaf[i] for i in train).isdisjoint(scaf[i] for i in test)
+assert train and test, "목표 비율로 나눌 수 없으면 train/test가 비는 경우를 점검한다"
+assert set(group[i] for i in train).isdisjoint(group[i] for i in test)
 
 # 누출을 숫자로: test 분자마다 train에서의 최근접 Tanimoto (ECFP4, 2048비트)
 fpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)    # ECFP4 (2048비트)
 fps = [fpgen.GetFingerprint(m) for m in mols]
 nn = [max(DataStructs.BulkTanimotoSimilarity(fps[j], [fps[i] for i in train])) for j in test]
-print("scaffold 개수", len(by_scaf), "| train", len(train), "test", len(test), "| test→train 최근접 Tanimoto 중앙값", round(float(np.median(nn)), 2))
+print("그룹 수", len(by_scaf), "| train", len(train), "test", len(test), f"(test 비율 {len(test)/len(smiles):.2f})", "| test→train 최근접 Tanimoto 중앙값", round(float(np.median(nn)), 2))
 assert len(nn) == len(test) and all(0.0 <= v <= 1.0 for v in nn)
 ```
+- 위 분할은 설명용 그리디 구현이다(큰 그룹부터 train을 채우고 나머지를 test로). 가장 큰 그룹이 목표 크기를 넘거나 그룹이 적으면 비율이 목표와 크게 달라지거나 train/test가 비므로 **실제 비율을 보고**한다.
 - *scaffold가 다르다고 분자가 다른 것은 아니다*. 모듈 05에서 scaffold 분할에서도 Lipophilicity test의 26%가 train에 Tanimoto ≥ 0.7인 분자를 가졌다(최근접 유사도 중앙값 0.57). 그래서 분할 뒤 위처럼 **최근접 유사도를 측정해 보고**한다.
 - 옛 `AllChem.GetMorganFingerprintAsBitVect`는 이 RDKit(2026.09.1)에서 `DEPRECATION WARNING: please use MorganGenerator`를 냈다(같은 분자에서 같은 지문을 냄). 그래서 `rdFingerprintGenerator`를 쓴다 (모듈 05 노트북과 같다).
 
@@ -126,6 +132,6 @@ for k, (tr, te) in enumerate(GroupKFold(n_splits=4).split(X, groups=donor)):
 ## 6. 점검 한 줄
 - [ ] 막으려는 경로 / **막지 못하는 경로**를 적었다
 - [ ] 분할 *후* 누출을 수치로 쟀다 (위치 공유율, 최근접 유사도, 기증자 겹침)
-- [ ] 같은 항목(서열·분자·텍스트)의 중복을 분할 전에 병합했다
+- [ ] 같은 항목(서열·분자·텍스트)의 중복을 분할 전에 묶었다(병합 또는 같은 분할), 라벨 충돌 규칙을 적었다
 - [ ] test의 군집(위치 블록·가족·기증자) 수를 확인했다
 - [ ] 사전학습 코퍼스와의 중복을 조회했거나, 못 했음을 한계로 적었다

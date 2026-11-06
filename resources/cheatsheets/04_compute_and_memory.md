@@ -8,7 +8,7 @@
 | 추론, fp32 | 4 | 가중치 |
 | 추론, bf16/fp16 | 2 | 가중치 |
 | 전체 파인튜닝, 순수 fp32 AdamW | 16 | 가중치 4 + 기울기 4 + Adam 1·2차 모멘트 8 |
-| 혼합 정밀도 전체 파인튜닝 | 16 안팎† | fp32 마스터 사본이 필요해 총 바이트는 순수 fp32와 비슷하다†. 이득은 주로 연산 속도와 활성값 메모리 |
+| 혼합 정밀도 전체 파인튜닝 | 16~20† | fp32 마스터 사본이 필요해 총 바이트는 순수 fp32와 비슷하거나 더 클 수 있다(반정밀도 사본·기울기 보관 방식에 따라)†. 이득은 주로 연산 속도와 활성값 메모리 |
 | LoRA (동결 가중치 fp32) | 동결 4 + 학습분 16 | 학습 매개변수가 전체의 1% 미만이면 거의 4P |
 | LoRA (동결 가중치 bf16) | 동결 2 + 학습분 16 | 동결 가중치만 bf16, LoRA 매개변수는 fp32 |
 
@@ -29,12 +29,12 @@ assert abs(budget_gb(650e6, "lora_fp32", 1.35e6) - 2.6) < 0.1             # LoRA
 assert abs(budget_gb(650e6, "lora_bf16", 1.35e6) - 1.3) < 0.1             # 동결 가중치 bf16 ≈ 1.3 GB
 print({m: round(budget_gb(650e6, m, 1.35e6), 2) for m in ["infer_fp32", "infer_bf16", "full_fp32", "lora_fp32", "lora_bf16"]})
 ```
-- **활성값**은 배치·서열 길이·층 수에 따라 크게 달라져 위 공식에 없다. 짧은 서열·작은 모델에서는 무시할 만하지만 긴 서열에서는 지배적일 수 있다 (아래 §3).
+- **활성값**은 배치·서열 길이·층 수에 따라 크게 달라져 위 공식에 없다. 작은 모델·짧은 서열에서도 설정에 따라 달라지므로 **해당 설정에서 측정**하고, 긴 서열에서는 지배적일 수 있다 (아래 §3).
 - 8M·35M 모델에서는 방법 간 차이가 0.1~0.5 GB라 장비 차이에 묻힌다 (모듈 06).
 
 ## 2. 연산량 어림
 - 트랜스포머 학습 연산량 $C \approx 6ND$ (N 매개변수, D 토큰)†, 순전파 $\approx 2ND$†. 모듈 06은 이 식과 Mac MPS 측정 처리량으로 시간을 어림했다.
-- 어림치는 **같은 장비·같은 구현의 측정 처리량**을 곱해야 의미가 있다. 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다: Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 단일 실행이며 반복 측정이 아니다.
+- 시간 어림 = 연산량 ÷ **같은 장비·같은 구현에서 측정한 처리량**(FLOP/s 또는 token/s; 단위를 맞춘다). 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다: Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 단일 실행이며 반복 측정이 아니다.
 
 ## 3. 측정값 (Mac MPS, ESM-2 35M, 배치 4, forward+backward 중앙값 3회)
 메모리는 MPS **드라이버 할당량**이라 peak가 아닌 *대리 지표*다. 같은 설정의 시간이 실행마다 약 10% 흔들렸다.
@@ -64,7 +64,7 @@ gc.collect()
 if torch.backends.mps.is_available():
     torch.mps.empty_cache()             # 측정 전에 정리하지 않으면 직전 작업의 버퍼가 섞인다 (모듈 06에서 겪음)
 before = mps_mem_gb()
-x = torch.zeros(256, 1024, 1024, device="mps" if torch.backends.mps.is_available() else "cpu")   # 1 GiB fp32
+x = torch.zeros(256, 1024, 1024, device="mps" if torch.backends.mps.is_available() else "cpu")   # 1 GiB(=1.07 GB, 십진 GB 기준) fp32
 after = mps_mem_gb()
 print("MPS 대리 지표 변화(GB):", None if np.isnan(after) else round(after - before, 2))
 del x; gc.collect()

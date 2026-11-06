@@ -62,9 +62,19 @@ print("hidden_states", len(hs), "개 =", n_layers, "층 + 임베딩 층")
 
 ## 3. 변이 위치의 잔기 임베딩
 ```python
+AAS = "ACDEFGHIKLMNPQRSTVWY"
+
+def check_seq(seq, pos1=None):
+    """입력 점검: 표준 20종, 최대 길이, 1-based 위치 범위. (0·음수·범위 밖 위치는 파이썬 인덱싱이 조용히 다른 토큰을 고른다)"""
+    assert set(seq) <= set(AAS), "표준 20종 이외의 문자(X, B, Z, U, O 등)는 따로 처리해야 한다"
+    assert len(seq) <= enc_model.config.max_position_embeddings - 2, "<cls>/<eos>를 포함한 최대 길이 초과"
+    if pos1 is not None:
+        assert 1 <= pos1 <= len(seq), "pos1은 1-based이며 1..L 이어야 한다"
+
 @torch.no_grad()
 def residue_embedding(seq, pos1):
     """pos1: 1-based 잔기 위치. <cls>가 인덱스 0이므로 토큰 인덱스 = pos1."""
+    check_seq(seq, pos1)
     enc = tok(seq, return_tensors="pt").to(DEVICE)
     h = enc_model(**enc).last_hidden_state[0]
     return h[pos1].cpu().numpy()
@@ -72,16 +82,21 @@ def residue_embedding(seq, pos1):
 seq = seqs[0]
 assert tok.convert_ids_to_tokens(tok(seq)["input_ids"])[5] == seq[4]    # 토큰 5 = 잔기 5 (1-based)
 print(residue_embedding(seq, 5).shape)
+for bad in (0, -1, len(seq) + 1):
+    try:
+        residue_embedding(seq, bad); raise RuntimeError("점검이 통과해서는 안 된다")
+    except AssertionError:
+        pass
 ```
 
 ## 4. Masked-marginal zero-shot 점수 (단일 치환)
 ```python
-AAS = "ACDEFGHIKLMNPQRSTVWY"
 AA_IDS = torch.tensor(tok.convert_tokens_to_ids(list(AAS)), device=DEVICE)
 
 @torch.no_grad()
 def masked_marginal_table(seq):
     """(L, 20) 표: 각 위치를 <mask>로 가렸을 때 20개 아미노산의 log-확률."""
+    check_seq(seq)
     ids = tok(seq, return_tensors="pt")["input_ids"].to(DEVICE)         # (1, L+2)
     L = len(seq)
     batch = ids.repeat(L, 1)
@@ -91,12 +106,20 @@ def masked_marginal_table(seq):
     return lp[:, AA_IDS].cpu().numpy()
 
 def mm_score(table, seq, pos1, mt):
+    check_seq(seq, pos1)
     wt = seq[pos1 - 1]
     return table[pos1 - 1, AAS.index(mt)] - table[pos1 - 1, AAS.index(wt)]
 
 table = masked_marginal_table(seq)
 assert table.shape == (len(seq), 20)
-assert abs(mm_score(table, seq, 5, seq[4])) < 1e-6                     # wt → wt 는 0
+assert abs(mm_score(table, seq, 5, seq[4])) < 1e-6                     # wt → wt 는 0 (약한 점검: 같은 원소끼리 뺀 값)
+# 독립 점검: 위치 5만 따로 가려 한 번에 계산한 값이 표의 행과 같아야 한다
+ids = tok(seq, return_tensors="pt")["input_ids"].to(DEVICE)
+assert tok.convert_ids_to_tokens(ids[0, 5].item()) == seq[4]           # 가리기 전 토큰 = 위치 5의 잔기
+single = ids.clone(); single[0, 5] = tok.mask_token_id
+with torch.no_grad():
+    lp5 = torch.log_softmax(mlm_model(input_ids=single).logits[0, 5].float(), dim=-1)[AA_IDS].cpu().numpy()
+assert np.allclose(table[4], lp5, atol=1e-4)
 print("예: 위치 5", seq[4], "→ A:", round(float(mm_score(table, seq, 5, "A")), 3))
 ```
 - 점수는 "자연 서열 분포에서 얼마나 그럴듯한가"의 **대리 지표**다. 실제 fitness와의 일치는 assay·단백질마다 달라 ProteinGym 같은 벤치마크로 확인한다 (모듈 02 §4).

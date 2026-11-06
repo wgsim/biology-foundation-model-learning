@@ -16,16 +16,18 @@
 | 확산 모델 | diffusion model | 잡음을 단계적으로 제거하며 생성. RFdiffusion, AlphaFold 3의 구조 생성부 | 02 |
 | 토크나이저 | tokenizer | 서열을 모델 입력 단위로 자르는 규칙 | 01 |
 | k-mer | k-mer | 길이 k의 연속 부분서열. 겹치게/겹치지 않게 쓸 수 있다 | 01 |
-| BPE | byte-pair encoding | 자주 같이 나오는 조각을 반복 병합해 어휘를 만드는 토큰화. DNABERT-2 | 01, 03 |
+| BPE | byte-pair encoding | 자주 같이 나오는 조각을 반복 병합해 어휘를 만드는 토큰화. DNABERT-2가 채택(초기 DNABERT는 겹치는 k-mer) | 01, 03 |
 | 임베딩 | embedding | 서열·세포·분자를 나타내는 벡터. 모델의 어느 층·어떻게 풀링했는지에 따라 달라진다 | 01 |
 | 평균 풀링 | mean pooling | 토큰별 벡터를 평균해 서열 하나의 벡터로 만듦. 패딩과 특수 토큰(`<cls>`, `<eos>`)을 뺐는지 확인 | 02 |
 | 선형 probe | linear probe | 동결한 임베딩 위에 선형 모델(Ridge 등)만 학습해 표현이 정보를 담았는지 보는 평가 | 02 |
 | 동결 | frozen | 사전학습 가중치를 갱신하지 않음 | 02, 06 |
 | 미세조정 | fine-tuning | 사전학습 가중치까지 과제 데이터로 갱신. 과적합·망각 위험 | 06 |
+| few-shot | few-shot | 과제 예제를 소수만 제공(프롬프트 또는 소량 학습). 예제가 없으면 zero-shot, 전부 쓰면 일반 지도학습. 이 과정에서는 다루지 않는 설정 | — |
+| 분포 이동 | distribution shift | 학습과 평가(배포) 데이터의 분포가 다른 상태. 새 위치·새 가족·새 기증자로의 분할이 이를 흉내 낸다 | 04, 07 |
 | 매개변수 효율 미세조정 | parameter-efficient fine-tuning (PEFT) | 일부 소수 매개변수만 학습(LoRA 등) | 06 |
 | LoRA | low-rank adaptation | 동결 가중치에 저랭크 분해 행렬을 더해 그 행렬만 학습. 학습 매개변수·옵티마이저 메모리를 줄이지만 순전파·역전파 계산은 남는다 | 06 |
 | 스케일링 법칙 | scaling law | 모델 크기·데이터·연산량과 손실의 경험적 관계. 도메인(서열)마다 다를 수 있다 | 01 |
-| 어텐션 | attention | 토큰 간 가중 합으로 문맥을 섞는 연산. 길이 L에 대해 시간·메모리가 L²로 늘어난다 | 01 |
+| 어텐션 | attention | 토큰 간 가중 합으로 문맥을 섞는 연산. 표준 구현은 L×L 점수 행렬을 만들어 시간·메모리가 L²로 는다(FlashAttention류는 점수 행렬을 저장하지 않아 메모리를 줄이지만 연산량은 여전히 L²†) | 01 |
 | FlashAttention | FlashAttention | 정확한 어텐션을 타일 단위로 계산해 메모리 입출력을 줄이는 CUDA 구현†. Mac MPS에는 없다 | 06 |
 | 상태공간 모델 / 장거리 합성곱 | state-space model (SSM) / long convolution | 긴 서열을 어텐션보다 낮은 비용으로 처리하는 계열. Mamba는 SSM, Hyena는 암묵적 장거리 합성곱이며 HyenaDNA·Caduceus 등 DNA 모델이 장거리 문맥에 쓴다 | 01, 03 |
 | 혼합 정밀도 | mixed precision | 반정밀도(bf16/fp16) 연산 + fp32 가중치 사본. 이득은 주로 속도·활성값 메모리 | 06 |
@@ -56,10 +58,10 @@
 | 그룹 부트스트랩 | group bootstrap | 상관 단위(그룹)를 복원추출해 구간을 구함. test 군집이 적으면 무의미 | 07 |
 | 조건부 구간 | conditional interval | 학습·초기화를 고정하고 test만 다시 뽑아 얻은 구간. 학습 변동은 반영하지 않는다 | 07 |
 | Spearman 상관 | Spearman correlation | 순위 상관. 상수 예측에서는 정의되지 않음(NaN) | 02 |
-| AUROC | ROC-AUC | 양성이 음성보다 높게 점수 매겨질 확률. 폴드 모델 사이에 풀링하지 말고 폴드별로 평균 | 05 |
-| AUPRC | average precision / PR-AUC | 양성이 드문 분류에 적합. 무작위 기준은 양성 비율 | 03 |
+| AUROC | ROC-AUC | 무작위로 고른 양성이 음성보다 높게 점수 매겨질 확률(동점은 1/2로 셈). 순위 성능이며 확률 보정(calibration)과 별개. 폴드 모델 점수는 폴드별로 구해 평균 | 05 |
+| AUPRC | average precision (AP) / PR-AUC | 양성이 드문 분류에 적합. `average_precision_score`는 계단식 적분인 AP로 PR 곡선의 사다리꼴 면적과 약간 다르다. 무작위 기준은 대략 양성 비율(유병률에 의존) | 03 |
 | macro-F1 | macro-averaged F1 | 클래스별 F1의 단순 평균. 불균형 데이터에서 클래스를 동등하게 본다 | 04 |
-| Recall@k | recall@k | 상위 k개 후보 안에 정답이 있는 비율. 갤러리 크기와 동점 규칙에 의존 | 05 |
+| Recall@k | recall@k | 상위 k개 안에 정답이 들어 있는 비율(정답이 질의당 하나일 때; 여러 개면 찾은 정답 수/전체 정답 수와 "하나라도 찾았는가"의 hit rate를 구분). 갤러리 크기와 동점 규칙에 의존 | 05 |
 | 갤러리 | gallery | 검색에서 정답을 골라야 하는 후보 집합 | 05 |
 | ties-against-truth | ties-against-truth | 정답과 점수가 같은 후보를 정답보다 앞선 것으로 세는 보수적 동점 규칙 | 05 |
 | 사전 등록 | pre-registration | 분할·지표·주 비교·결정 규칙을 결과를 만들기 전에 고정(커밋)해 기록 | 07 |
@@ -79,8 +81,8 @@
 | DMS | deep mutational scanning | 많은 변이의 효과를 한 번에 측정하는 실험. 노이즈가 있다 | 02 |
 | 적합도 | fitness | DMS에서 측정한 변이의 기능/성장 점수. 임상 병원성과 목표가 다르다 | 02 |
 | 상위성 | epistasis | 변이 효과가 단순 합이 아니라 서로 의존함 | 02 |
-| masked marginal | masked marginal | 변이 위치를 가렸을 때 변이 아미노산과 야생형의 log 확률 차이로 점수를 매김 | 02 |
-| contact map | contact map | 잔기 쌍의 3차원 근접 여부 행렬. 어텐션에서 읽어내는 연구가 있다 | 02 |
+| masked marginal | masked marginal | 변이 위치를 가렸을 때 변이 아미노산과 야생형의 log 확률 차이로 점수를 매김. 마스크 없이 야생형 서열 1회로 모든 위치를 점수화하는 wild-type marginal(싸지만 야생형 잔기가 입력에 보임), 변이/야생형 서열 각각의 의사 로그우도(pseudo-log-likelihood, PLL) 비율(비싸지만 다중 변이로 확장 가능)과 구별한다 | 02 |
+| contact map | contact map | 잔기 쌍의 3차원 근접 여부 행렬. 어텐션에서 읽어내는 연구가 있다. 예측 평가에는 상위 L(또는 L/5)개 예측의 정밀도(precision@L/5)를 흔히 쓴다(모듈 02 노트북 03) | 02 |
 | pLDDT | predicted LDDT | 구조 예측의 잔기별 신뢰도(0~100) | 02 |
 | PAE / pAE | predicted aligned error | 한 잔기를 기준으로 정렬했을 때 다른 잔기 위치의 예상 오차(잔기 쌍 단위) | 02 |
 | pTM / ipTM | predicted TM-score / interface pTM | 전체/계면의 구조 정확도 예측 점수 | 02 |
@@ -116,6 +118,7 @@
 | 카운트 행렬 | count matrix | 세포 × 유전자 UMI 카운트 | 04 |
 | HVG | highly variable genes | 세포 간 변동이 큰 유전자 선택 | 04 |
 | 순위값 인코딩 | rank value encoding | 깊이 정규화 → 유전자별 코퍼스 중앙값으로 나눔 → 값 내림차순의 유전자 ID 열. Geneformer | 04 |
+| 희소성 | sparsity (zeros) | 단일세포 카운트의 대부분이 0인 성질. 생물학적 무발현과 기술적 검출 실패가 섞여 있다† | 04, 05 |
 | 배치 효과 | batch effect | 실험 조건 차이에서 오는 비생물학적 변동 | 04 |
 | 배치 보정 | batch correction / integration | 배치 신호를 줄이는 방법(Harmony, scVI 등) | 04 |
 | ASW | average silhouette width | 군집 분리도 지표. scib에서 배치 혼합/유형 보존에 쓰임 | 04 |
@@ -129,7 +132,7 @@
 |---|---|---|---|
 | SMILES | SMILES | 분자를 문자열로 쓰는 표기. 같은 분자도 표기가 여러 가지일 수 있다 | 05 |
 | ECFP / Morgan 지문 | ECFP / Morgan fingerprint | 원자 주변 구조를 해시한 비트(카운트) 지문. 강한 baseline | 05 |
-| Tanimoto 유사도 | Tanimoto similarity | 지문 비트 집합의 겹침 비율(0~1) | 05 |
+| Tanimoto 유사도 | Tanimoto similarity | 비트 지문 두 개의 교집합/합집합 비율(0~1). 카운트 지문에는 최소값 합/최대값 합 형태의 확장을 쓴다† | 05 |
 | Murcko 골격 | Bemis–Murcko scaffold | 고리계와 연결 사슬만 남긴 분자 골격 | 05 |
 | Butina 군집 | Butina clustering | Tanimoto 거리 기반 분자 군집. 부트스트랩의 상관 단위로 씀 | 05 |
 | 모달리티 | modality | 서열, 구조, 텍스트, 이미지처럼 데이터 종류 | 05 |

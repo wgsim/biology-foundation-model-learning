@@ -32,7 +32,7 @@
 ## 각 모듈 구성
 `README.md`(강의노트) · `notebooks/`(실습) · `exercises.md`(과제)
 
-모듈마다 산출물 1개(단순 baseline 재현 / split 변경 효과 확인 / 동결 표현 vs 미세조정 비교 중 하나)와 데이터 누출 점검 항목을 포함한다. 자세한 내용은 [resources/reading_list.md](resources/reading_list.md)의 운영 메모 참고.
+모듈마다 산출물 1개(단순 baseline 재현 / split 변경 효과 확인 / 동결 표현 vs 미세조정 비교 중 하나)와 데이터 누출 점검 항목을 포함한다. 자세한 내용은 [resources/reading_list.md](resources/reading_list.md)의 운영 메모 참고. 용어는 [glossary](resources/glossary.md), 벤치마크는 [benchmarks](resources/benchmarks.md), 반복 패턴은 [cheatsheets](resources/cheatsheets/).
 
 ## 진행 상태
 - [x] 스캐폴드
@@ -45,6 +45,6 @@
 - [x] 모듈 05 Multimodal·기타 (강의노트·과제·노트북 2종 모두 Mac에서 실행 확인; Colab 미검증)
 - [x] 모듈 06 Advanced (강의노트·과제·노트북 3종 Mac에서 실행 확인, DDP 템플릿은 CPU 2프로세스로만 검증·SLURM 파일은 문법 점검만; Colab·클러스터 미검증)
 - [x] 모듈 07 Capstone (제안서·보고서·루브릭·점검표·검토 프롬프트 템플릿, 실행되는 템플릿 노트북 1종 Mac에서 실행 확인; 새 모델·데이터 없음)
-- [ ] resources 보강(용어집·벤치마크 표·치트시트), 전체 링크·인용 일괄 점검
+- [x] resources 보강: [용어집](resources/glossary.md) · [벤치마크 지도](resources/benchmarks.md) · [치트시트 4종](resources/cheatsheets/) (코드 블록은 `.venv`에서 실행 확인), 전체 DOI·arXiv ID 125개와 상대 링크 147개 점검 (외부 URL 10개 중 4개는 자리표시자·디렉터리 주소)
 
 > 최신 모델·논문 정보는 작성 시 문헌 DB로 확인하며, 확인되지 않은 항목은 `⚠️ 미검증`으로 표시한다.

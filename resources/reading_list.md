@@ -1,6 +1,6 @@
 # Reading List
 
-작성/갱신: 2026-11-06 (v6: 모듈 07 읽기 목록 추가) · 2026-11-05 (v5: 모듈 06 읽기 목록 추가 · v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
+작성/갱신: 2026-11-06 (v7: 벤치마크 지도용 항목 2개 추가, 전체 DOI·arXiv ID 일괄 점검) · 2026-11-06 (v6: 모듈 07 읽기 목록 추가) · 2026-11-05 (v5: 모듈 06 읽기 목록 추가 · v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
 
 ## 범례
 **검증 상태**
@@ -45,7 +45,7 @@
 | ◆ (설계 트랙) | Hsu et al., *Learning inverse folding from millions of predicted structures* (ESM-IF1, ICML 2022 / PMLR 162; bioRxiv) | 10.1101/2022.04.10.487779 | ✅ Web |
 | ◆ | Su et al., *SaProt: Protein Language Modeling with Structure-aware Vocabulary* (ICLR 2024; Foldseek 구조 토큰 + 서열) | 10.1101/2023.10.01.560349 | ✅ Web |
 | ★ (변이 트랙) | Cheng et al., *Accurate proteome-wide missense variant effect prediction with AlphaMissense* (Science 2023) | 10.1126/science.adg7492 | ✅ PubMed |
-| ★ [벤치마크] | Notin et al., *ProteinGym: Large-Scale Benchmarks for Protein Fitness Prediction and Design* — bioRxiv 2023 / NeurIPS 2023 Datasets & Benchmarks Track 학회판 | 10.1101/2023.12.07.570727 | ✅ bioRxiv · ✅ Web |
+| ★ [벤치마크] | Notin et al., *ProteinGym: Large-Scale Benchmarks for Protein Fitness Prediction and Design* — bioRxiv 2023 / NeurIPS 2023 Datasets & Benchmarks Track 학회판 (bioRxiv v1의 제목은 *…for Protein Design and Fitness Prediction*) | 10.1101/2023.12.07.570727 | ✅ bioRxiv · ✅ Web |
 | ◆ [기준선] | Frazer et al., *Disease variant prediction with deep generative models of evolutionary data* (EVE, Nature 2021;599:91–95) — MSA 기반 비교 기준 | 10.1038/s41586-021-04043-8 | ✅ PubMed |
 | ◆ | Madani et al., *Large language models generate functional protein sequences across diverse families* (ProGen, Nat Biotechnol 2023;41:1099–1106) — 자기회귀 생성 | 10.1038/s41587-022-01618-2 | ✅ PubMed |
 | ○ | Nijkamp et al., *ProGen2: Exploring the boundaries of protein language models* (Cell Syst 2023;14:968–978) | 10.1016/j.cels.2023.10.002 | ✅ PubMed |
@@ -75,6 +75,7 @@
 | ★ [벤치마크][비판] | Marin et al., *BEND: Benchmarking DNA Language Models on biologically meaningful tasks* (ICLR 2024) | arXiv:2311.12570 | ✅ Web |
 | ★ [비판] | Huang et al., *Personal transcriptome variation is poorly explained by current genomic deep learning models* (Nat Genet 2023;55:2056–2059) | 10.1038/s41588-023-01574-w | ✅ PubMed |
 | ★ [벤치마크][비판] | Benegas, Eraslan, Song, *Benchmarking DNA Sequence Models for Causal Regulatory Variant Prediction in Human Genetics* (TraitGym, bioRxiv 2025-02; HF `songlab/TraitGym`, MIT) — 매칭된 대조군, AUPRC, 모델별 사전 계산 점수 공개 | 10.1101/2025.02.11.637758 | ✅ bioRxiv |
+| ○ [벤치마크] | Grešová et al., *Genomic benchmarks: a collection of datasets for genomic sequence classification* (BMC Genom Data 2023;24:25) — 조절 요소(프로모터·인핸서·열린 염색질) 분류 9개 데이터셋, 사람·생쥐·선충, 간단한 CNN baseline 포함(초록) | 10.1186/s12863-023-01123-8 | ✅ PubMed |
 | ◆ [자기지도] | Benegas et al., *GPN-MSA: an alignment-based DNA language model for genome-wide variant effect prediction* (bioRxiv 2023-10) → *A DNA language model based on multispecies alignment predicts the effects of genome-wide variants* (Nat Biotechnol 2025;43:1960–1965, Brief Communication) | 10.1038/s41587-024-02511-w | ✅ Web |
 
 > 토론 포인트: Enformer·Borzoi 같은 **지도학습** 모델과 DNABERT·NT·Evo 같은 **자기지도 사전학습** 모델은 학습 목적이 다르다. 규모만으로 같은 범주에서 순위를 매기지 말 것.
@@ -123,6 +124,7 @@
 | ◆ [기준선][분자] | Rogers & Hahn, *Extended-Connectivity Fingerprints* (J Chem Inf Model 2010;50:742–754) — ECFP | 10.1021/ci100050t | ✅ Crossref |
 | ○ [split][분자] | Bemis & Murcko, *The Properties of Known Drugs. 1. Molecular Frameworks* (J Med Chem 1996;39:2887–2893) — scaffold 정의 | 10.1021/jm9602928 | ✅ Crossref |
 | ○ [split][분자] | Sheridan, *Time-Split Cross-Validation as a Method for Estimating the Goodness of Prospective Prediction* (J Chem Inf Model 2013;53:783–790) | 10.1021/ci400084k | ✅ Crossref |
+| ○ [벤치마크][분자] | Huang et al., *Therapeutics Data Commons: Machine Learning Datasets and Tasks for Drug Discovery and Development* (NeurIPS 2021 Datasets and Benchmarks; 웹 검색 요약 기준 22개 과제·66개 데이터셋 — 초록 원문은 직접 확인 안 됨) | arXiv:2102.09548 | ✅ Web |
 | ◆ [기준선][분자] | Yang et al., *Analyzing Learned Molecular Representations for Property Prediction* (J Chem Inf Model 2019;59:3370–3388; Chemprop) | 10.1021/acs.jcim.9b00237 | ✅ Crossref |
 | ◆ [화학] | Ahmad, Simon, Chithrananda, Grand et al., *ChemBERTa-2: Towards Chemical Foundation Models* (2022; 학술지 게재 여부 미확인) — MLM/MTR 사전학습, 77M 분자 | arXiv:2209.01712 | ✅ Web |
 | ★ [비판][분자][최신] | Praski, Adamczyk, Czech, *Benchmarking Pretrained Molecular Embedding Models For Molecular Representation Learning* (2025; 프리프린트) — 초록: 28개 모델·25개 분류 데이터셋에서 한 모델(CheMeleon)을 제외하고는 ECFP count 지문을 넘지 못했다고 보고 | arXiv:2508.06199 | ✅ Web |

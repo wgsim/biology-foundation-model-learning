@@ -108,17 +108,25 @@ def main():
     sampler = DistributedSampler(ds, num_replicas=world, rank=rank, shuffle=False, drop_last=True) if (world > 1 and not a.no_sampler) else None
     dl = DataLoader(ds, batch_size=a.per_rank_batch, sampler=sampler, shuffle=False, drop_last=True)
 
-    losses, step = [], 0
+    losses, step, epoch = [], 0, 0
     model.train()
-    for ids, pos, y in dl:
-        if step >= a.steps:
-            break
-        loss = nn.functional.mse_loss(model(ids.to(device), pos.to(device)), y.to(device))      # mean over the rank batch
-        opt.zero_grad()
-        loss.backward()                                                                        # DDP all-reduces (averages) gradients here
-        opt.step()
-        losses.append(loss.item())
-        step += 1
+    while step < a.steps:                                       # repeat epochs until the requested number of steps is done
+        if sampler is not None:
+            sampler.set_epoch(epoch)                            # reshuffles when shuffle=True (a no-op here, kept for correctness)
+        n_batches = 0
+        for ids, pos, y in dl:
+            if step >= a.steps:
+                break
+            loss = nn.functional.mse_loss(model(ids.to(device), pos.to(device)), y.to(device))      # mean over the rank batch
+            opt.zero_grad()
+            loss.backward()                                                                        # DDP all-reduces (averages) gradients here
+            opt.step()
+            losses.append(loss.item())
+            step += 1
+            n_batches += 1
+        if n_batches == 0:
+            raise RuntimeError("dataset smaller than per-rank-batch x world_size: no batch can be formed")
+        epoch += 1
 
     h = param_hash(net)
     gathered = [None] * world

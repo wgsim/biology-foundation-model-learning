@@ -36,6 +36,9 @@ export MASTER_ADDR MASTER_PORT
 # Pin the model revision (supply-chain hygiene; see module 05 section 8)
 REVISION="REPLACE_WITH_COMMIT_SHA"
 
+# train_ddp.py is looked up relative to the submit directory
+cd "${SLURM_SUBMIT_DIR:-.}"
+
 srun torchrun \
   --nnodes="$SLURM_NNODES" \
   --nproc_per_node=4 \

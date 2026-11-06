@@ -1,6 +1,6 @@
 # Reading List
 
-작성/갱신: 2026-11-05 (v5: 모듈 06 읽기 목록 추가 · v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
+작성/갱신: 2026-11-06 (v6: 모듈 07 읽기 목록 추가) · 2026-11-05 (v5: 모듈 06 읽기 목록 추가 · v4: 모듈 05 읽기 목록 추가) · 2026-11-04 (v3: Codex·agy 교차 검토 반영 + 미검증 항목 재검증)
 
 ## 범례
 **검증 상태**
@@ -157,10 +157,20 @@
 
 (검증·분할 관련 필독은 01의 DOME·MMseqs2, 벤치마크는 02·03의 TAPE/FLIP/PEER/BEND 참고.)
 
+## 07 Capstone — 재현 · 보고 · 문서화
+| 필수도 | 논문 | 출처 / DOI | 검증 |
+|---|---|---|---|
+| ★ [재현] | Pineau et al., *Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program)* (초록: 재현성 = 같은 코드·데이터(가능하면)로 논문에 보고된 것과 비슷한 결과를 얻는 것; 학술지 게재 정보는 직접 확인 안 됨) | arXiv:2003.12206 | ✅ Web |
+| ◆ [문서화] | Mitchell et al., *Model Cards for Model Reporting* (초록: 공개 모델에 의도한 사용 사례와 성능 특성을 담은 문서를 동반하자고 제안; 게재처는 직접 확인 안 됨) | arXiv:1810.03993 | ✅ Web |
+| ◆ [문서화] | Gebru et al., *Datasheets for datasets* (Commun ACM 2021;64:86–92; 초록: 데이터셋의 동기·구성·수집 과정·권장 용도 등을 문서화하자고 제안) | 10.1145/3458723 | ✅ Crossref |
+
+(검증·분할 관련 필독은 01의 DOME·MMseqs2, 비판적 평가 논문은 각 모듈 구역 참고.)
+
 ---
 
 ## 남은 불확실성 (⚠️)
 - ⚠️ ESM C: 동료심사 논문이 확인되지 않음(블로그·모델 카드만). 라이선스 변동 가능.
+- 모듈 07 읽기 목록: Pineau·Mitchell은 arXiv 초록까지만 확인(학술지/학회 게재 여부 미확인). Gebru는 Crossref 서지 + arXiv 초록.
 - 모듈 06 읽기 목록: Sledzieski·ZeRO·FSDP·Raji·Baker & Church는 제목·서지 수준만 확인(초록 미확인). LoRA·SAE·혼합 정밀도·Biderman·Sandbrink는 arXiv 초록까지 확인, 학회/학술지 게재 여부는 미확인(FlashAttention은 NeurIPS 2022 게재를 Crossref로 확인).
 - ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni, ESMFold2 프리프린트: 프리프린트 상태만 확인. 저널 게재판은 못 찾음(없다는 뜻은 아님).
 - ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론 미확인.

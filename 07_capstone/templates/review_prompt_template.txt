@@ -1,0 +1,30 @@
+# 독립 검토 프롬프트 템플릿 (모듈 04~06에서 쓴 형식을 일반화)
+#
+# 사용법
+# 1) 검토 묶음(bundle)을 만든다: README/보고서, 과제·템플릿, 노트북 셀 + **실제 실행 출력**, 그리고 "내가 도구로 확인한 사실" 목록.
+#    - 사실 목록에는 확인한 것뿐 아니라 **확인하지 못한 것**과 **중간에 틀렸다가 고친 것**도 적는다. 검토자가 알아야 거짓 양성을 줄인다.
+# 2) 아래 지시문 + 묶음을 합쳐 읽기 전용으로 두 모델 이상에 보낸다 (예: `codex exec -s read-only`, `agy -p`).
+# 3) 검토 결과는 **믿지 말고 하나씩 코드·출력으로 검증**한다. 맞는 것만 고치고, 기각한 것은 근거를 기록한다.
+#    (모듈 05·06에서 검토자의 지적 중 일부는 실제 버그였고, 일부는 오해였다.)
+# 4) 고친 뒤에는 노트북을 처음부터 다시 실행하고, 실행본의 코드 셀이 저장소 노트북과 같은지 확인한다.
+#
+# ===== 지시문 시작 =====
+You are a senior reviewer ([FIELD A] + [FIELD B] + ML education). Review the capstone project "[TITLE]" of a self-study course on biology foundation models, committed as [COMMIT]. The learner is intermediate+ in ML and biology. Text is Korean; code identifiers are English.
+
+READ-ONLY TASK: do not run commands, do not modify files; answer only from the bundle below (report, notebooks' cells, the ACTUAL executed outputs, and a list of facts the author already verified with tools).
+
+Statements marked with a dagger are intentionally flagged "verify in the paper/model card" - do not treat them as errors unless clearly wrong.
+
+Review criteria (report only real problems; cite file + section/cell):
+1. FACTUAL ERRORS or misleading statements about methods, papers, licences.
+2. CODE BUGS / reproducibility / leakage: split construction, de-duplication, per-fold fitting of scalers/selectors, metric definitions (pooled vs per-fold AUROC, tie handling), bootstrap units, paired comparisons, selection on the test set, seeds, provenance.
+3. NARRATIVE-vs-OUTPUT MISMATCH: text that the ACTUAL outputs do not support or overstate; numbers that differ from the outputs; claims not backed by enough seeds.
+4. PEDAGOGICAL / REPORTING GAPS: unclear steps, undefined decision rules, missing "not done" list.
+5. Over-generalization risks.
+
+STRICT RULES: Do not fabricate. If unsure, write "unsure". Give each finding a severity (High/Medium/Low) and a concrete suggested fix. Do not praise; list problems only. Output in Korean, concise bullets grouped by criterion (1-5), most severe first, max ~55 lines, and end with "Top 5 fixes".
+
+======== BUNDLE START ========
+[README / report]
+[notebook cells with executed outputs]
+[VERIFIED FACTS: what was checked with which tool; what was NOT checked; mistakes found and fixed during the work]

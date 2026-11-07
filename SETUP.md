@@ -28,6 +28,13 @@ print(torch.backends.mps.is_available())
 ```
 또는 저장소를 clone한 뒤 `requirements/colab.txt`를 설치한다. 런타임 유형은 GPU(T4 이상)로 설정.
 
+**Colab T4에서 확인한 것** (2026-11-06; GPU 15.6 GB, vCPU 2개, RAM 약 12 GB, Python 3.13, torch 2.14.1, transformers 5.22.1):
+- 이미지에 `Bio`·`rdkit`·`peft`가 없다. `pip install biopython==1.88 rdkit==2026.9.1 peft==0.21.2`.
+- 이미지의 `torchao 0.10.0`이 `peft 0.21.2`와 충돌한다(`ImportError: ... torchao`). `pip uninstall -y torchao` 후 커널을 다시 시작한다.
+- `.cache/`가 없으므로 모듈 05·06·07 노트북이 가정하는 캐시(ProteinGym v1.3, 모듈 05의 UniProt 표, 모듈 06/03의 ESM-2 150M·650M `config.json`)를 먼저 받거나 올려야 한다. 모듈 02 노트북 01이 ProteinGym을 받고, 05 노트북 02가 UniProt 표를 받는다.
+- 메모리: ESMFold v1은 가중치를 CPU로 먼저 불러오면 RAM 12 GB를 넘겨 커널이 죽을 수 있다(모듈 02 노트북 04는 `device_map`으로 GPU에 바로 올린다).
+- 노트북별 Colab 실행 시간과 Mac과의 수치 차이는 각 모듈 README(05 §9, 06 §8, 07 §5)에 있다.
+
 ## 3. 기관 클러스터 (🔴)
 Assumption: SLURM 스케줄러, `module` 시스템 사용. 실제 파티션명·모듈명은 기관마다 다르므로 확인 후 수정한다.
 ```bash

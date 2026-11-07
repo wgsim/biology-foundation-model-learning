@@ -34,7 +34,7 @@ print({m: round(budget_gb(650e6, m, 1.35e6), 2) for m in ["infer_fp32", "infer_b
 
 ## 2. 연산량 어림
 - 트랜스포머 학습 연산량 $C \approx 6ND$ (N 매개변수, D 토큰)†, 순전파 $\approx 2ND$†. 모듈 06은 이 식과 Mac MPS 측정 처리량으로 시간을 어림했다.
-- 시간 어림 = 연산량 ÷ **같은 장비·같은 구현에서 측정한 처리량**(FLOP/s 또는 token/s; 단위를 맞춘다). 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다: Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 단일 실행이며 반복 측정이 아니다.
+- 시간 어림 = 연산량 ÷ **같은 장비·같은 구현에서 측정한 처리량**(FLOP/s 또는 token/s; 단위를 맞춘다). 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다: Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 반대로 모듈 06 노트북 01(LoRA·전체 파인튜닝, GPU 중심)은 T4가 721초로 Mac MPS의 약 1,156초보다 빨랐고, CPU 위주인 모듈 05 노트북 01(sklearn 교차검증)은 Colab(vCPU 2개)에서 약 60분으로 Mac의 약 10분보다 훨씬 느렸다. 단일 실행이며 반복 측정이 아니다.
 
 ## 3. 측정값 (Mac MPS, ESM-2 35M, 배치 4, forward+backward 중앙값 3회)
 메모리는 MPS **드라이버 할당량**이라 peak가 아닌 *대리 지표*다. 같은 설정의 시간이 실행마다 약 10% 흔들렸다.
@@ -47,7 +47,7 @@ print({m: round(budget_gb(650e6, m, 1.35e6), 2) for m in ["infer_fp32", "infer_b
 
 (모듈 06 README §5-C의 표와 같다.) 읽는 법:
 - 서열 길이 128 → 1024에서 메모리가 약 12배 늘었다 → 활성값이 지배한다. 길이 1024에서 체크포인팅은 메모리를 −68%, 시간을 +31% 바꿨다.
-- 이 Mac에서 `sdpa`와 `eager`의 대리 메모리는 같았다. **MPS에는 FlashAttention 커널이 없다**†. CUDA에서의 효과는 측정하지 않았다.
+- 이 Mac에서 `sdpa`와 `eager`의 대리 메모리는 같았다. **MPS에는 FlashAttention 커널이 없다**†. Colab T4(CUDA)에서는 달랐다: 같은 설정(35M, 배치 4, 길이 1024)에서 최대 할당 메모리가 eager fp32 7.34 GB → sdpa fp32 2.58 GB, 체크포인팅까지 0.61 GB였다(`max_memory_allocated`라 MPS의 드라이버 대리 지표와 다른 지표; 모듈 06 README §8).
 - bf16 autocast는 이 장비에서 시간 이득이 없었다 (+9~20%).
 
 ```python
@@ -76,7 +76,7 @@ if torch.backends.mps.is_available():
 | 환경 | 확인한 것 | 확인하지 못했거나 안 되는 것 |
 |---|---|---|
 | 🟢 Mac (MPS/CPU) | ESM-2 8M~650M 임베딩·zero-shot, NT 500M 임베딩, Geneformer, 소형 LoRA/전체 파인튜닝, SAE, DDP 동등성(CPU 2프로세스) | FlashAttention(MPS에 없음†), 대형 모델(Evo 2 7B 이상), CUDA 전용 패키지 |
-| 🟡 Colab T4 | 모듈 04 노트북 01~03을 오류 없이 실행(총 약 56분, 약 1 compute unit). 모듈 02 노트북 04(ESMFold v1)를 오류 없이 실행(약 1.5~3분) | T4가 Mac보다 빠르다는 보장 없음(위 §2). 모듈 05·06·07은 Colab 미검증. scVI 같은 확률적 학습은 수치가 ±0.01 정도 달라질 수 있다. 무료급 런타임은 RAM 약 12 GB·GPU 15.6 GB라 ESMFold fp32 전체(약 14 GB)는 CPU를 거치지 않고 GPU로 바로 올려야 한다(§5) |
+| 🟡 Colab T4 | 모듈 04 노트북 01~03을 오류 없이 실행(총 약 56분, 약 1 compute unit). 모듈 02 노트북 04(ESMFold v1)를 오류 없이 실행(약 1.5~3분). 모듈 05(01·02)·06(01~03)·07 템플릿도 오류 없이 실행(각 1회; 05/01 약 60분, 05/02 약 25분, 06/01 721초, 06/02 792초, 06/03 131초, 07 93초) | T4가 Mac보다 빠르다는 보장 없음(위 §2). 05·06의 일부 수치(위치 블록 파인튜닝, PCA, 개별 SAE 특징)는 Mac과 달랐다(모듈 06 README §8). scVI 같은 확률적 학습은 수치가 ±0.01 정도 달라질 수 있다. 무료급 런타임은 RAM 약 12 GB·GPU 15.6 GB라 ESMFold fp32 전체(약 14 GB)는 CPU를 거치지 않고 GPU로 바로 올려야 한다(§5) |
 | 🔴 SLURM | `slurm_ddp.sbatch`는 `bash -n` 문법 점검만 | 실제 클러스터 실행, NCCL, 다중 노드 — **실행하지 못했다** |
 | 가중치가 큰 모델 | Evo 2: `evo2_1b_base`·40B는 FP8(Transformer Engine)·Hopper GPU 필요, `evo2_7b`는 bf16 가능(공식 README, 2026-11 확인). ESMFold2 가중치 약 27 GB(모델 카드) | 이 저장소는 둘 다 직접 실행하지 않았다 |
 
@@ -89,6 +89,8 @@ if torch.backends.mps.is_available():
 | 짧은 데이터에서 DDP가 2 step 만에 끝남 | 에폭 루프와 `sampler.set_epoch(epoch)` 사용 |
 | 패키지 버전이 달라 결과가 다름 | `requirements/base.lock.txt`로 재현, 모델은 리비전 고정 |
 | 큰 파일이 git에 들어감 | `.cache/`(가중치·데이터)는 `.gitignore` — 커밋 전 `git status` 확인 |
+| Colab에서 `peft` 임포트가 `Found an incompatible version of torchao`로 실패 | 이미지의 `torchao 0.10.0`이 `peft 0.21.2`(torchao 0.16 이상 요구)와 충돌. 노트북이 쓰지 않으므로 `pip uninstall -y torchao` 후 커널 재시작 |
+| GPU 1개에서 `torchrun --nproc_per_node=2` DDP가 실패 | rank 1이 `cuda:1`을 열지 못함. CPU(gloo)로 확인하려면 하위 프로세스에 `CUDA_VISIBLE_DEVICES=""` (모듈 06 노트북 03) |
 | Colab에서 모델 로드 중 커널이 갑자기 죽음 (ESMFold, RAM 12 GB) | 가중치가 fp32로 CPU RAM에 먼저 올라가 약 14 GB를 요구 → cgroup OOM. 3회 중 2회 실패. `from_pretrained(..., device_map={"": 0})`로 GPU에 바로 올리면 CPU 메모리는 1 GB 미만(파일 캐시 제외), GPU 순간 최대 약 14.1 GB |
 | `colab exec` 중 커널이 죽었는데 CLI가 끝나지 않음 | `--timeout`이 연결 끊김에는 듣지 않았다(4.6시간 대기, 약 5 CU 소모). 셸의 `timeout 600 colab exec ...`로 감싸고 끝나면 `colab stop` |
 

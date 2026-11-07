@@ -39,7 +39,7 @@
 - [x] 1차 문헌 검증 및 `resources/reading_list.md` (v2: Codex·agy 교차 검토 반영)
 - [x] 모듈 00 오리엔테이션
 - [x] 모듈 01 Foundations (강의노트·과제·노트북 3종, 실행 확인)
-- [x] 모듈 02 Protein (강의노트·과제·노트북 4종: 01–03 실행 확인, 04는 Colab 필요로 코드 경로만 검증)
+- [x] 모듈 02 Protein (강의노트·과제·노트북 4종: 01–03은 Mac에서, 04는 Colab T4에서 실행 확인)
 - [x] 모듈 03 DNA·Genome (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인, 노트북 03은 격리 환경)
 - [x] 모듈 04 Single-cell (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인; Colab T4에서도 01–03 실행 확인)
 - [x] 모듈 05 Multimodal·기타 (강의노트·과제·노트북 2종 모두 Mac에서 실행 확인; Colab 미검증)

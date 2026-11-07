@@ -106,7 +106,7 @@
 - 높은 pLDDT는 **구조가 맞다는 보장이 아니고**, 안정성·활성과도 직접 같지 않다. 변이 효과 예측에 pLDDT 변화를 쓰는 접근은 한계가 있다†(과제 5에서 직접 검증).
 - PAE/pTM은 도메인 간 상대 배치·전체 폴드 신뢰도를 나타낸다. 도메인 배치는 pLDDT만으로 알 수 없다.
 
-> **실습 [04_esmfold_plddt_colab](notebooks/04_esmfold_plddt_colab.ipynb)** 🟡: 가중치가 커서 Colab GPU 권장. (이 저장소에서는 Mac에서 실행 검증하지 않았다 — 노트북 상단 참고)
+> **실습 [04_esmfold_plddt_colab](notebooks/04_esmfold_plddt_colab.ipynb)** 🟡: 가중치가 커서 Colab GPU 권장. Colab T4에서 처음부터 끝까지 실행해 확인했다(2026-11-06, 단일 환경). 메모리 주의: 가중치를 CPU RAM으로 먼저 불러오면 12 GB 런타임에서 커널이 죽을 수 있어 노트북은 GPU로 바로 올리며, 이때 GPU 순간 최대 약 14 GB를 쓴다 — 자세한 내용은 노트북 상단 참고.
 
 ---
 
@@ -220,7 +220,8 @@ contact는 잔기쌍 사이의 대칭 관계인데 attention은 방향이 있고
 | 03 | contact head precision@L/5 (3 단백질 평균): 8M / 35M / 150M / 650M | 0.30 / 0.55 / 0.83 / 0.89 | 약 25초 |
 | 03 | 비지도 attention 보정 (3 단백질 평균, 150M): raw / 대칭화 / +APC | 0.03 / 0.23 / 0.36 | |
 | 03 | contact head, 서열 거리 ≥ 24 기준 (8M→650M) | 0.25 / 0.55 / 0.66 / 0.82 | |
-| 04 | Colab에서 직접 실행 (이 저장소에서는 실제 가중치로 실행 검증하지 않음) | — | |
+| 04 | (Colab T4, Python 3.13, torch 2.14.1, transformers 5.22.1, 로드 방식을 바꾼 뒤 2회 포함 3회 실행에서 수치 동일) 평균 pLDDT — 유비퀴틴 / GB1 / 섞은 서열 / `(GS)n` | 90.5 / 89.0 / 42.8 / 27.3 | 약 1.5분 (가중치 캐시됨) |
+| 04 | 실험 구조와 CA RMSD — 유비퀴틴(1UBQ) / GB1(1PGA) | 0.84 Å / 0.42 Å | |
 
 ## 다음
 → [03_dna_genome](../03_dna_genome/)

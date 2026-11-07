@@ -76,7 +76,7 @@ if torch.backends.mps.is_available():
 | 환경 | 확인한 것 | 확인하지 못했거나 안 되는 것 |
 |---|---|---|
 | 🟢 Mac (MPS/CPU) | ESM-2 8M~650M 임베딩·zero-shot, NT 500M 임베딩, Geneformer, 소형 LoRA/전체 파인튜닝, SAE, DDP 동등성(CPU 2프로세스) | FlashAttention(MPS에 없음†), 대형 모델(Evo 2 7B 이상), CUDA 전용 패키지 |
-| 🟡 Colab T4 | 모듈 04 노트북 01~03을 오류 없이 실행(총 약 56분, 약 1 compute unit) | T4가 Mac보다 빠르다는 보장 없음(위 §2). 모듈 05·06은 Colab 미검증. scVI 같은 확률적 학습은 수치가 ±0.01 정도 달라질 수 있다 |
+| 🟡 Colab T4 | 모듈 04 노트북 01~03을 오류 없이 실행(총 약 56분, 약 1 compute unit). 모듈 02 노트북 04(ESMFold v1)를 오류 없이 실행(약 1.5~3분) | T4가 Mac보다 빠르다는 보장 없음(위 §2). 모듈 05·06·07은 Colab 미검증. scVI 같은 확률적 학습은 수치가 ±0.01 정도 달라질 수 있다. 무료급 런타임은 RAM 약 12 GB·GPU 15.6 GB라 ESMFold fp32 전체(약 14 GB)는 CPU를 거치지 않고 GPU로 바로 올려야 한다(§5) |
 | 🔴 SLURM | `slurm_ddp.sbatch`는 `bash -n` 문법 점검만 | 실제 클러스터 실행, NCCL, 다중 노드 — **실행하지 못했다** |
 | 가중치가 큰 모델 | Evo 2: `evo2_1b_base`·40B는 FP8(Transformer Engine)·Hopper GPU 필요, `evo2_7b`는 bf16 가능(공식 README, 2026-11 확인). ESMFold2 가중치 약 27 GB(모델 카드) | 이 저장소는 둘 다 직접 실행하지 않았다 |
 
@@ -89,6 +89,8 @@ if torch.backends.mps.is_available():
 | 짧은 데이터에서 DDP가 2 step 만에 끝남 | 에폭 루프와 `sampler.set_epoch(epoch)` 사용 |
 | 패키지 버전이 달라 결과가 다름 | `requirements/base.lock.txt`로 재현, 모델은 리비전 고정 |
 | 큰 파일이 git에 들어감 | `.cache/`(가중치·데이터)는 `.gitignore` — 커밋 전 `git status` 확인 |
+| Colab에서 모델 로드 중 커널이 갑자기 죽음 (ESMFold, RAM 12 GB) | 가중치가 fp32로 CPU RAM에 먼저 올라가 약 14 GB를 요구 → cgroup OOM. 3회 중 2회 실패. `from_pretrained(..., device_map={"": 0})`로 GPU에 바로 올리면 CPU 메모리는 1 GB 미만(파일 캐시 제외), GPU 순간 최대 약 14.1 GB |
+| `colab exec` 중 커널이 죽었는데 CLI가 끝나지 않음 | `--timeout`이 연결 끊김에는 듣지 않았다(4.6시간 대기, 약 5 CU 소모). 셸의 `timeout 600 colab exec ...`로 감싸고 끝나면 `colab stop` |
 
 ## 6. 실행 전 체크
 - [ ] 필요한 다운로드(파일·출처·크기)를 적고 승인을 받았다

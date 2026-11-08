@@ -43,7 +43,7 @@
 | **D 분자·멀티모달** (모듈 05) | MoleculeNet 3종 · ChemBERTa-77M · UniProt 표 · ESM-2 35M · MiniLM 캐시 · [05 노트북](../05_multimodal_other/notebooks/) | 표기 증강 vs 정규화(05 과제 2), 거짓 음성 마스킹(05 과제 5), 군집 분할 임계값 연속 스윕(05 과제 1) | ECFP4·기술자, 무작위 초기화, 최근접 전이 | scaffold 분할의 한계, 텍스트 근접 중복, 동점·갤러리 정의 | 🟢 |
 | **E 논문 1편 재현** | 본인이 고른 논문 ([§3](#3-트랙-e-논문-재현-프로토콜)) | 논문의 표 한 칸/그림 하나가 재현되는가? 분할·baseline을 바꾸면? | 논문의 baseline + 본인이 추가한 단순 baseline | 논문과 다른 데이터 버전·전처리, 평가 코드 차이 | 🟢~🟡 |
 
-**시작점의 검증 수준**: 트랙 A의 템플릿 노트북만 이 모듈에서 새로 실행했다. B~D의 시작점은 모듈 03~05에서 이미 실행 확인한 노트북과 캐시를 가리킨다(질문에 필요한 라벨·좌표·열이 캐시에 있는지는 제안서 단계에서 직접 확인할 것). 트랙 E에는 선정된 논문이 없고, 논문·데이터·계산 비용 확인이 선행 조건이다. 각 트랙의 **MVP**는 위 질문 중 *하나*를 사전 지정 비교 하나로 줄인 것이다. 확장(다른 assay, 더 큰 모델, 새 데이터)은 MVP가 끝난 뒤에만. 새 데이터·모델이 필요하면 제안서에 파일·출처·크기·라이선스를 적고 승인을 받는다.
+**시작점의 검증 수준**: 트랙 A의 템플릿 노트북은 직접 실행된다. B~D는 모듈 03~05의 노트북·캐시를 가리키며, 질문 하나(MVP)씩을 템플릿 구조로 옮겨 **캐시만으로 한 번씩 시험 실행**했다([기록·스크립트](examples/dry_runs/README.md): B 5초, C 70초, D 약 14분; 학습자 파일럿이 아니고 질문의 나머지 절반은 실행하지 않았다). 필요한 열은 모두 있었으나 트랙 C의 세부 라벨(`cell.type.fine`)은 `pbmc_sub.h5ad`에 없어 노트북 04/01의 하위표본 추출을 재현해 붙여야 했다. 질문에 필요한 라벨·좌표·열이 캐시에 있는지는 제안서 단계에서 직접 확인할 것. 트랙 E에는 선정된 논문이 없고, 논문·데이터·계산 비용 확인이 선행 조건이다. 각 트랙의 **MVP**는 위 질문 중 *하나*를 사전 지정 비교 하나로 줄인 것이다. 확장(다른 assay, 더 큰 모델, 새 데이터)은 MVP가 끝난 뒤에만. 새 데이터·모델이 필요하면 제안서에 파일·출처·크기·라이선스를 적고 승인을 받는다.
 
 ## 3. 트랙 E: 논문 재현 프로토콜
 Pineau et al.(arXiv:2003.12206 초록)은 재현성을 "같은 코드와 데이터(가능하면)로 논문에 보고된 것과 비슷한 결과를 얻는 것"으로 설명한다 — 이 프로토콜은 그 정의를 *주장 단위*로 좁힌다.
@@ -57,6 +57,7 @@ Pineau et al.(arXiv:2003.12206 초록)은 재현성을 "같은 코드와 데이�
 ## 4. 진행 절차와 템플릿
 - [제안서 템플릿](templates/proposal_template.md) → [**템플릿 노트북**](templates/capstone_notebook_template.ipynb)에서 시작 → [보고서 템플릿](templates/report_template.md) → [제출 전 점검표](templates/checklist.md) → [루브릭](templates/rubric.md) → [독립 검토 프롬프트](templates/review_prompt_template.txt).
 - [**예시**](examples/example_track_A_proposal_and_report.md): 템플릿 노트북의 실제 실행 결과로 채운 제안서와 보고서(트랙 A, 짧은 형태). 형식을 보여 주기 위한 것이며 결론을 일반화하지 말 것.
+- [**B~D 시험 실행 기록**](examples/dry_runs/README.md): 트랙 B·C·D의 MVP를 템플릿 구조로 옮겨 실행한 기록과 스크립트(템플릿에서 바꿔야 했던 부분, 대조 정의, 결과). 트랙 E는 실행하지 못했다.
 - 템플릿 노트북은 `✏️` 셀(설정·결정 규칙·한계)만 바꾸고 나머지 구조를 유지한다. **트랙 A(ProteinGym 변이) 전용**이다 — 다른 트랙은 데이터 로딩, 특징 추출, 분할 키(군집 단위), B0 함수를 교체해야 한다. 실행 기록은 `.cache/capstone_runs/<RUN_NAME>/`(git 제외)에 쓴다.
 
 ## 5. 템플릿 노트북이 보여 주는 것 (데모 결과)
@@ -146,8 +147,9 @@ test 결과로 층을 골라 그 test 점수를 주 결과로 보고한 것은 "
 | [templates/rubric.md](templates/rubric.md) · [templates/checklist.md](templates/checklist.md) | 루브릭 · 제출 전 점검표 |
 | [templates/review_prompt_template.txt](templates/review_prompt_template.txt) | 독립 검토 프롬프트 |
 | [examples/example_track_A_proposal_and_report.md](examples/example_track_A_proposal_and_report.md) | 채워진 예시 |
+| [examples/dry_runs/README.md](examples/dry_runs/README.md) | 트랙 B·C·D 시험 실행 기록 + 스크립트 3개 (캐시만 사용) |
 
 - 노트북은 저장소에 **출력 없이** 커밋된다. 내려받는 파일 없음, 설치 없음.
 
 ## 마무리
-이 모듈로 18주 커리큘럼의 모듈 00~07이 끝난다. **남은 것**: `resources/`의 용어집·벤치마크 표·치트시트는 아직 작성하지 않았고, 전체 링크·인용 일괄 점검도 하지 않았다. 지금까지의 점검표는 이 저장소 자신에도 적용된다 — 빠진 부분이 있으면 이슈로 남겨 보완하자.
+이 모듈로 18주 커리큘럼의 모듈 00~07이 끝난다. `resources/`의 [용어집](../resources/glossary.md)·[벤치마크 지도](../resources/benchmarks.md)·[치트시트](../resources/cheatsheets/)와 전체 링크·인용 점검은 이후에 추가·실행했다. **남은 것**: 트랙 E 후보 논문 선정, 클러스터(SLURM) 실행, 학습자 파일럿. 지금까지의 점검표는 이 저장소 자신에도 적용된다 — 빠진 부분이 있으면 이슈로 남겨 보완하자.

@@ -43,7 +43,9 @@ def decide(deltas, ci):
 
 # ---------- 1. 출처 ----------
 ROOT = Path.cwd()
-snap = next((ROOT / ".cache/hf/hub/datasets--songlab--TraitGym/snapshots").iterdir())
+snaps = sorted(p for p in (ROOT / ".cache/hf/hub/datasets--songlab--TraitGym/snapshots").iterdir() if p.is_dir())
+assert len(snaps) == 1, f"TraitGym 스냅샷이 {len(snaps)}개다 — 사용할 리비전을 명시해야 한다: {[p.name for p in snaps]}"
+snap = snaps[0]
 D = snap / DATASET
 
 
@@ -79,6 +81,7 @@ assert all(not np.isnan(v).any() for v in S.values()), "NaN 있는 점수"
 assert tg.groupby("match_group").label.sum().eq(1).all(), "그룹당 양성이 1개가 아니다"
 assert tg.groupby("match_group").chrom.nunique().eq(1).all(), "그룹이 여러 염색체에 걸친다"
 assert not tg.duplicated(["chrom", "pos", "ref", "alt"]).any(), "변이 중복"
+assert tg.match_group.nunique() >= MIN_GROUPS, f"match_group이 {MIN_GROUPS}개 미만이라 군집 부트스트랩 구간을 믿을 수 없다"
 print(f"변이 {len(tg)} | 양성 {y.sum()} | 그룹 {len(np.unique(groups))} | 염색체 {len(np.unique(chrom))}")
 
 # ---------- 3. 단위 ----------
@@ -114,31 +117,32 @@ def boot_delta(model, base, sm=None, B=BOOT, seed=0):
     return np.percentile(vals, [2.5, 97.5])
 
 
-def perm_null(n_perm=N_PERM, seed=0):
+G_BASE = np.lexsort((np.arange(len(y)), groups))      # match_group 블록 순서로 정렬한 인덱스
+
+
+def perm_null(score, n_perm=N_PERM, seed=0):
+    """점수 *값*을 match_group 안에서 섞어 풀링 AUPRC의 귀무분포를 만든다 (점수의 전체 분포·동점 구조는 그대로 유지)."""
     rs = np.random.RandomState(seed)
-    gi = [np.where(groups == k)[0] for k in np.unique(groups)]
     vals = []
     for _ in range(n_perm):
+        shuf = np.lexsort((rs.random_sample(len(y)), groups))   # 각 그룹 블록 안의 무작위 순열
         sc = np.empty(len(y))
-        for idx in gi:
-            sc[idx] = rs.permutation(len(idx))
+        sc[G_BASE] = score[shuf]
         vals.append(average_precision_score(y, sc))
     return np.array(vals)
 
 
 allm = np.ones(len(y), bool)
-null = perm_null()
-print(f"\n귀무분포(그룹 내 순위 섞기) AUPRC 평균 {null.mean():.3f}, 95% 분위수 {np.percentile(null, 95):.3f}")
+S["TSS 거리만"] = -tg.tss_dist.abs().values.astype(float)               # 비학습 대조: TSS 거리만
+NULL = {name: perm_null(S[name], seed=i) for i, name in enumerate(S)}   # 점수별 귀무분포
 rows = []
 for name in S:
-    a = auprc(allm, name)
-    rows.append(dict(score=name, auprc=a, flipped=auprc(allm, -S[name]), perm_p=(1 + np.sum(null >= a)) / (1 + len(null))))
+    a, nl = auprc(allm, name), NULL[name]
+    rows.append(dict(score=name, auprc=a, flipped=auprc(allm, -S[name]), null_mean=nl.mean(), null_q95=np.percentile(nl, 95), perm_p=(1 + np.sum(nl >= a)) / (1 + len(nl))))
 TAB = pd.DataFrame(rows)
-# 비학습 대조: TSS 거리만
-S["TSS 거리만"] = -tg.tss_dist.abs().values.astype(float)
-a = auprc(allm, "TSS 거리만")
-TAB.loc[len(TAB)] = dict(score="TSS 거리만", auprc=a, flipped=auprc(allm, -S["TSS 거리만"]), perm_p=(1 + np.sum(null >= a)) / (1 + len(null)))
+print("\n점수별 귀무분포(그룹 내 점수 값 섞기 1,000회):")
 print(TAB.round(3).to_string(index=False))
+null = NULL[PRIMARY["model"]]                                           # 음성 대조의 비교 기준(주 비교 모델의 귀무분포)
 
 print("\n--- 주 비교와 보조 비교 (Δ = AUPRC_model − AUPRC_baseline) ---")
 RESULT = {}
@@ -161,7 +165,8 @@ print(f"\n음성 대조(모델 점수를 그룹 내 섞기): AUPRC {auprc(allm, 
 d_pos = chrom_delta("Evo2-7B LLR", "TSS 거리만")
 ci_pos = boot_delta("Evo2-7B LLR", "TSS 거리만")
 dec_pos, mean_pos, wins_pos = decide(d_pos, tuple(ci_pos))
-print(f"양성 대조(Evo2-7B LLR vs TSS 거리만): 염색체 평균 Δ {mean_pos:+.3f}, Δ>0 {wins_pos}/{len(d_pos)}, 95%[{ci_pos[0]:+.3f},{ci_pos[1]:+.3f}] → {dec_pos}")
+pooled_pos = auprc(allm, "Evo2-7B LLR") - auprc(allm, "TSS 거리만")
+print(f"양성 대조(Evo2-7B LLR vs TSS 거리만): 풀링 Δ {pooled_pos:+.3f} 95%[{ci_pos[0]:+.3f},{ci_pos[1]:+.3f}] | 염색체 평균 Δ {mean_pos:+.3f}, Δ>0 {wins_pos}/{len(d_pos)} → {dec_pos}")
 d_ref = chrom_delta("phyloP-100v", "phyloP-241m")                      # 참고: 같은 계열 보존 점수끼리의 차이
 print(f"참고(phyloP-100v vs phyloP-241m): 염색체 평균 Δ {np.mean(d_ref):+.3f}, Δ>0 {int((d_ref > 0).sum())}/{len(d_ref)}")
 

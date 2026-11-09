@@ -46,7 +46,7 @@ def sha256(path, chunk=1 << 22):
 
 
 PROV = dict(run=RUN_NAME, repo_commit=subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip(),
-            sha256={f: sha256(SC / f)[:16] + "…" for f in ["pbmc_sub.h5ad", "geneformer_embeddings.npz"]},
+            sha256={f: sha256(SC / f)[:16] + "…" for f in ["pbmc_sub.h5ad", "geneformer_embeddings.npz", "wilk2020_pbmc.h5ad"]},   # wilk2020: 세부 라벨 복원에 쓴다
             packages={k: md.version(k) for k in ["numpy", "pandas", "scikit-learn", "scanpy", "anndata"]},
             primary=PRIMARY, C_LR=C_LR)
 OUT = ROOT / ".cache" / "capstone_runs" / RUN_NAME                  # git 제외 폴더: 실행 기록은 여기에만 쓴다
@@ -95,7 +95,7 @@ LOGHVG = np.asarray(a[:, hvg].X.todense() if hasattr(a.X, "todense") else a[:, h
 b = a[:, hvg].copy()
 sc.pp.scale(b, max_value=10)
 sc.pp.pca(b, n_comps=50, random_state=SEED)
-Z_PCA = b.obsm["X_pca"].copy()                       # 노트북 04/02와 같은 방식: held-out 기증자를 포함해 비지도 적합(transductive)
+Z_PCA = b.obsm["X_pca"].copy()                       # 노트북 04/02와 같은 방식. 주 비교의 PCA 기준: HVG 선택·스케일·PCA를 *모든* 세포(held-out 기증자 포함)로 비지도 적합(transductive, 라벨은 쓰지 않음) → PCA에 유리한 쪽의 설정. fold별 적합은 민감도에서 따로 본다
 print(f"HVG {int(hvg.sum())} | PCA {Z_PCA.shape} | 준비 {time.time() - T0:.0f}s")
 
 
@@ -105,7 +105,9 @@ def fold_pca(te):
     mu, sd = LOGHVG[tr].mean(0), LOGHVG[tr].std(0) + 1e-8
     f = lambda M: np.clip((M - mu) / sd, -10, 10)
     p = PCA(n_components=50, random_state=SEED, svd_solver="randomized").fit(f(LOGHVG[tr]))
-    return p.transform(f(LOGHVG[tr])), p.transform(f(LOGHVG[te]))
+    Ztr, Zte = p.transform(f(LOGHVG[tr])), p.transform(f(LOGHVG[te]))
+    mu_ = Ztr.mean(0)                                           # 주 비교(split_static)와 같은 후처리: 훈련 평균 중심화 → 행 L2 정규화
+    return l2(Ztr - mu_), l2(Zte - mu_)
 
 
 def l2(Z):

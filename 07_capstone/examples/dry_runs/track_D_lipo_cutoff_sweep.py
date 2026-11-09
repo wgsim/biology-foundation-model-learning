@@ -191,7 +191,7 @@ OOF = {}
 for key in ["random"] + THRESHOLDS:
     for rep, X in REPS.items():
         OOF[(key, rep)] = run_cv(X, y, FOLDS[key], rep)
-    OOF[(key, "ECFP4-shuffled")] = run_cv(X_ECFP, np.random.default_rng(SEED).permutation(y), FOLDS[key], "ECFP4")      # 음성 대조(전체 라벨 섞기; 진단용)
+    OOF[(key, "ECFP4-shuffled")] = run_cv(X_ECFP, np.random.default_rng(SEED).permutation(y), FOLDS[key], "ECFP4")      # 음성 대조: 전체 라벨을 한 번 섞어 *훈련*하고, 예측은 아래 rmse()에서 *원래* 라벨과 비교한다(특징–라벨 연결이 끊긴 모델 → RMSE ≈ y의 표준편차여야 함; 진단용)
     print(f"  split={key} 완료 (누적 {time.time() - t:.0f}s)", flush=True)
 
 rmse = lambda o, yy=y: np.sqrt(np.mean((o - yy[None]) ** 2, axis=1))          # 반복별 RMSE

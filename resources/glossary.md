@@ -26,6 +26,7 @@
 | 분포 이동 | distribution shift | 학습과 평가(배포) 데이터의 분포가 다른 상태. 새 위치·새 가족·새 기증자로의 분할이 이를 흉내 낸다 | 04, 07 |
 | 매개변수 효율 미세조정 | parameter-efficient fine-tuning (PEFT) | 일부 소수 매개변수만 학습(LoRA 등) | 06 |
 | LoRA | low-rank adaptation | 동결 가중치에 저랭크 분해 행렬을 더해 그 행렬만 학습. 학습 매개변수·옵티마이저 메모리를 줄이지만 순전파·역전파 계산은 남는다 | 06 |
+| LP-FT | linear probing then fine-tuning | 먼저 head만 학습(linear probe)한 뒤 전체를 파인튜닝하는 순서. 무작위 초기화 head의 큰 기울기가 사전학습 표현을 손상시키는 것을 줄이려는 방법†. 이 저장소는 실행하지 않았다 | 06 |
 | 스케일링 법칙 | scaling law | 모델 크기·데이터·연산량과 손실의 경험적 관계. 도메인(서열)마다 다를 수 있다 | 01 |
 | 어텐션 | attention | 토큰 간 가중 합으로 문맥을 섞는 연산. 표준 구현은 L×L 점수 행렬을 만들어 시간·메모리가 L²로 는다(FlashAttention류는 점수 행렬을 저장하지 않아 메모리를 줄이지만 연산량은 여전히 L²†) | 01 |
 | FlashAttention | FlashAttention | 정확한 어텐션을 타일 단위로 계산해 메모리 입출력을 줄이는 CUDA 구현†. Mac MPS에는 없다 | 06 |
@@ -49,6 +50,7 @@
 | 시간 분할 | time split | 발표/측정 시점으로 train과 test를 나눔 | 05 |
 | 기증자 단위 분할 | donor-level split | 같은 기증자의 세포가 train과 test에 걸치지 않게 가름 | 04 |
 | LODO | leave-one-donor-out | 기증자 한 명을 test로 두는 교차검증 | 04 |
+| transductive 적합 | transductive fitting | 전처리(HVG 선택·스케일·PCA·배치 보정)를 held-out 표본까지 포함해 라벨 없이 적합하는 것. 라벨 누출은 아니지만 그 기준선에 유리할 수 있어, 훈련 fold만으로 적합한 결과를 민감도로 함께 본다 | 04, 07 |
 | 오염 | contamination | 평가 데이터가 사전학습 코퍼스에 들어 있음 | 01 |
 | baseline | baseline | 비교 기준 방법. 이 과정에서는 ① 파라미터를 학습하지 않는 것, ② 단순 특징, ③ 무작위 초기화 모델 | 07 |
 | 무작위 초기화 대조군 | random-init control | 같은 구조에서 사전학습 없이 초기화한 모델. 사전학습의 기여를 분리. 시드마다 새로 만든다 | 04, 07 |
@@ -61,6 +63,7 @@
 | AUROC | ROC-AUC | 무작위로 고른 양성이 음성보다 높게 점수 매겨질 확률(동점은 1/2로 셈). 순위 성능이며 확률 보정(calibration)과 별개. 폴드 모델 점수는 폴드별로 구해 평균 | 05 |
 | AUPRC | average precision (AP) / PR-AUC | 양성이 드문 분류에 적합. `average_precision_score`는 계단식 적분인 AP로 PR 곡선의 사다리꼴 면적과 약간 다르다. 무작위 기준은 대략 양성 비율(유병률에 의존) | 03 |
 | macro-F1 | macro-averaged F1 | 클래스별 F1의 단순 평균. 불균형 데이터에서 클래스를 동등하게 본다 | 04 |
+| 균형정확도 | balanced accuracy | 클래스별 재현율의 단순 평균. 균등 추측 기준은 *그 평가 집합에 있는 클래스 수*의 역수다 | 04, 07 |
 | Recall@k | recall@k | 상위 k개 안에 정답이 들어 있는 비율(정답이 질의당 하나일 때; 여러 개면 찾은 정답 수/전체 정답 수와 "하나라도 찾았는가"의 hit rate를 구분). 갤러리 크기와 동점 규칙에 의존 | 05 |
 | 갤러리 | gallery | 검색에서 정답을 골라야 하는 후보 집합 | 05 |
 | ties-against-truth | ties-against-truth | 정답과 점수가 같은 후보를 정답보다 앞선 것으로 세는 보수적 동점 규칙 | 05 |

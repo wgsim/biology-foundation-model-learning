@@ -77,6 +77,7 @@ if torch.backends.mps.is_available():
 |---|---|---|
 | 🟢 Mac (MPS/CPU) | ESM-2 8M~650M 임베딩·zero-shot, NT 500M 임베딩, Geneformer, 소형 LoRA/전체 파인튜닝, SAE, DDP 동등성(CPU 2프로세스) | FlashAttention(MPS에 없음†), 대형 모델(Evo 2 7B 이상), CUDA 전용 패키지 |
 | 🟡 Colab T4 | 모듈 04 노트북 01~03을 오류 없이 실행(총 약 56분, 약 1 compute unit). 모듈 02 노트북 04(ESMFold v1)를 오류 없이 실행(약 1.5~3분). 모듈 05(01·02)·06(01~03)·07 템플릿도 오류 없이 실행(각 1회; 05/01 약 60분, 05/02 약 25분, 06/01 721초, 06/02 792초, 06/03 131초, 07 93초) | T4가 Mac보다 빠르다는 보장 없음(위 §2). 05·06의 일부 수치(위치 블록 파인튜닝, PCA, 개별 SAE 특징)는 Mac과 달랐다(모듈 06 README §8). scVI 같은 확률적 학습은 수치가 ±0.01 정도 달라질 수 있다. 무료급 런타임은 RAM 약 12 GB·GPU 15.6 GB라 ESMFold fp32 전체(약 14 GB)는 CPU를 거치지 않고 GPU로 바로 올려야 한다(§5) |
+| 🟡 Colab A100 | Geneformer V2-104M 전체 미세조정(512토큰, 배치 32, fp32): 0.580초/스텝·최대 9.2 GB, 약 9,600세포 2 에폭 fold당 351초(Mac MPS는 약 8초/스텝). 20 fold 7,087초에 13.26 compute unit(6.73 CU/h) — **측정**, 1회(모듈 07 [C③-V2](../../07_capstone/examples/dry_runs/second_halves.md)) | fp16 autocast는 벤치마크에서 0.116초/스텝이었으나 결과 동등성은 확인하지 않았다. CLI의 Drive 마운트는 실패했다(결과는 주기적으로 내려받음) |
 | 🔴 SLURM | `slurm_ddp.sbatch`는 `bash -n` 문법 점검만 | 실제 클러스터 실행, NCCL, 다중 노드 — **실행하지 못했다** |
 | 가중치가 큰 모델 | Evo 2: `evo2_1b_base`·40B는 FP8(Transformer Engine)·Hopper GPU 필요, `evo2_7b`는 bf16 가능(공식 README, 2026-11 확인). ESMFold2 가중치 약 27 GB(모델 카드) | 이 저장소는 둘 다 직접 실행하지 않았다 |
 

@@ -66,3 +66,18 @@ uv pip install --python .venv-enformer/bin/python -r requirements/enformer.txt
 - `.venv-enformer/`는 git에서 제외된다. 검증 환경: Python 3.12, torch 2.15.0, transformers 4.56.2.
 - 모듈 03 노트북 01·02는 기본 `.venv`에서 실행한다.
 - 모듈 03에서 내려받는 모델·데이터 중 **Nucleotide Transformer v1 가중치는 CC BY-NC-SA 4.0(비상업)**이다.
+
+## 6. 웹 책으로 보기 (선택)
+Markdown·노트북을 내용 변경 없이 목차·검색이 있는 웹 책(Jupyter Book 2 / MyST)으로 만든다. 원본은 건드리지 않고 `.book_build/`(git 제외)에 복사해 빌드한다.
+```bash
+uv venv --python 3.12 .venv-book
+uv pip install --python .venv-book/bin/python jupyter-book   # 검증: jupyter-book 2.1.7, Node 필요
+bash book/build.sh             # 문서만 빌드 (노트북은 출력 없이 실림)
+EXEC=1 bash book/build.sh      # Mac .venv로 실행 가능한 노트북 17개를 실행해 출력·그림을 싣는다 (바뀐 것만 다시 실행)
+.venv/bin/python -m http.server 8765 --bind 127.0.0.1 --directory .book_build/_build/html   # http://localhost:8765
+```
+- 첫 빌드는 사이트 테마(`book-theme`)를 GitHub에서 내려받는다(네트워크 필요).
+- 문서를 추가하면 `book/myst.yml`의 `toc`에도 추가한다. 목차에 없는 문서는 책에 나오지 않는다.
+- Colab·격리 환경 전용 노트북(02/04 ESMFold, 03/03 Enformer)은 실행하지 않고 출력 없이 싣는다.
+- `book/stage_fix_links.py`가 복사본에서 폴더 링크와 한글 제목 앵커를 책에 맞게 고친다(MyST는 제목 id에서 한글을 버린다).
+

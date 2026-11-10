@@ -1,0 +1,87 @@
+# 웹 책 설정. book/build.sh 가 .book_build/ 로 복사해 쓴다. 문서를 추가하면 toc에도 추가한다.
+version: 1
+project:
+  title: Biology Foundation Model 학습 로드맵
+  toc:
+    - file: README.md
+    - file: SETUP.md
+    - title: 00 Orientation
+      children:
+        - file: 00_orientation/README.md
+        - file: 00_orientation/self_assessment.md
+        - file: 00_orientation/paper_note_template.md
+        - file: 00_orientation/experiment_log_template.md
+    - title: 01 Foundations
+      children:
+        - file: 01_foundations/README.md
+        - file: 01_foundations/notebooks/01_tokenizers_compare.ipynb
+        - file: 01_foundations/notebooks/02_mini_protein_mlm.ipynb
+        - file: 01_foundations/notebooks/03_homology_split_leakage.ipynb
+        - file: 01_foundations/exercises.md
+    - title: 02 Protein
+      children:
+        - file: 02_protein/README.md
+        - file: 02_protein/notebooks/01_esm2_embeddings_probe.ipynb
+        - file: 02_protein/notebooks/02_zero_shot_variant_effect.ipynb
+        - file: 02_protein/notebooks/03_attention_contact_map.ipynb
+        - file: 02_protein/notebooks/04_esmfold_plddt_colab.ipynb
+        - file: 02_protein/exercises.md
+    - title: 03 DNA · Genome · RNA
+      children:
+        - file: 03_dna_genome/README.md
+        - file: 03_dna_genome/notebooks/01_nt_embeddings_promoter_probe.ipynb
+        - file: 03_dna_genome/notebooks/02_zero_shot_variant_scores_traitgym.ipynb
+        - file: 03_dna_genome/notebooks/03_enformer_tracks.ipynb
+        - file: 03_dna_genome/exercises.md
+    - title: 04 Single-cell
+      children:
+        - file: 04_single_cell/README.md
+        - file: 04_single_cell/notebooks/01_geneformer_tokenize_embed.ipynb
+        - file: 04_single_cell/notebooks/02_embeddings_vs_baselines.ipynb
+        - file: 04_single_cell/notebooks/03_robustness_ablation.ipynb
+        - file: 04_single_cell/exercises.md
+    - title: 05 Multimodal · 기타
+      children:
+        - file: 05_multimodal_other/README.md
+        - file: 05_multimodal_other/notebooks/01_chemical_lm_vs_fingerprints.ipynb
+        - file: 05_multimodal_other/notebooks/02_protein_text_contrastive.ipynb
+        - file: 05_multimodal_other/exercises.md
+    - title: 06 Advanced
+      children:
+        - file: 06_advanced_research/README.md
+        - file: 06_advanced_research/notebooks/01_lora_vs_frozen_vs_full.ipynb
+        - file: 06_advanced_research/notebooks/02_sae_esm2_features.ipynb
+        - file: 06_advanced_research/notebooks/03_efficiency_and_ddp_check.ipynb
+        - file: 06_advanced_research/exercises.md
+    - title: 07 Capstone
+      children:
+        - file: 07_capstone/README.md
+        - file: 07_capstone/exercises.md
+        - title: 템플릿
+          children:
+            - file: 07_capstone/templates/proposal_template.md
+            - file: 07_capstone/templates/report_template.md
+            - file: 07_capstone/templates/rubric.md
+            - file: 07_capstone/templates/checklist.md
+            - file: 07_capstone/templates/capstone_notebook_template.ipynb
+        - title: 예시와 시험 실행 기록
+          children:
+            - file: 07_capstone/examples/example_track_A_proposal_and_report.md
+            - file: 07_capstone/examples/track_E_candidates.md
+            - file: 07_capstone/examples/dry_runs/README.md
+            - file: 07_capstone/examples/dry_runs/second_halves.md
+            - file: 07_capstone/examples/dry_runs/track_E_traitgym.md
+    - title: 자료
+      children:
+        - file: resources/reading_list.md
+        - file: resources/glossary.md
+        - file: resources/benchmarks.md
+        - file: resources/cheatsheets/README.md
+        - file: resources/cheatsheets/01_embedding_recipes.md
+        - file: resources/cheatsheets/02_metrics_and_stats.md
+        - file: resources/cheatsheets/03_splits_and_leakage.md
+        - file: resources/cheatsheets/04_compute_and_memory.md
+site:
+  template: book-theme
+  options:
+    folders: true   # 주소에 폴더 구조를 남긴다 (README·exercises가 모듈마다 있어 겹치므로)

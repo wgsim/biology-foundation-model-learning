@@ -7,10 +7,10 @@
 | 표시 | 환경 |
 |---|---|
 | 🟢 | Mac 로컬 (CPU/MPS) |
-| 🟡 | Google Colab GPU (T4급) |
+| 🟡 | Google Colab GPU (T4급; 캡스톤 시험 실행 한 건만 A100) |
 | 🔴 | 기관 GPU 클러스터 |
 
-환경 설정은 [SETUP.md](SETUP.md) 참고.
+환경 설정은 [SETUP.md](SETUP.md) 참고. 목차·검색이 있는 웹 책으로 보려면 SETUP.md §6(`bash book/build.sh`).
 
 ## 18주 일정 (주 8~10시간 기준)
 | 주차 | 모듈 | 핵심 목표 |
@@ -44,7 +44,7 @@
 - [x] 모듈 04 Single-cell (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인; Colab T4에서도 01–03 실행 확인)
 - [x] 모듈 05 Multimodal·기타 (강의노트·과제·노트북 2종 모두 Mac에서 실행 확인; Colab T4에서도 2종 모두 실행 확인, 시간은 Mac의 3~6배)
 - [x] 모듈 06 Advanced (강의노트·과제·노트북 3종 Mac에서 실행 확인, Colab T4에서도 01–03 실행 확인; DDP 템플릿은 CPU 2프로세스로만 검증·SLURM 파일은 문법 점검만; 클러스터 미검증)
-- [x] 모듈 07 Capstone (제안서·보고서·루브릭·점검표·검토 프롬프트 템플릿, 실행되는 템플릿 노트북 1종 Mac과 Colab T4에서 실행 확인; 트랙 B~D는 MVP 하나씩 캐시로 시험 실행([기록](07_capstone/examples/dry_runs/README.md)), 질문의 나머지 절반도 대부분 시험 실행([기록](07_capstone/examples/dry_runs/second_halves.md)), 트랙 E는 TraitGym 한 편을 시험 실행([기록](07_capstone/examples/dry_runs/track_E_traitgym.md); 모두 학습자 파일럿 아님); 새 모델은 scGPT whole-human 체크포인트 하나(약 207 MB, 소스 26개는 설치 없이 사용), 새 데이터는 MoleculeNet CSV 3개(약 3.9 MB), TraitGym 지표 CSV 22개(2 KB), CELLxGENE H5AD 1개(150 MB)뿐)
-- [x] resources 보강: [용어집](resources/glossary.md) · [벤치마크 지도](resources/benchmarks.md) · [치트시트 4종](resources/cheatsheets/) (코드 블록은 `.venv`에서 실행 확인), 전체 DOI·arXiv ID 125개와 상대 링크 147개 점검 (외부 URL 10개 중 4개는 자리표시자·디렉터리 주소)
+- [x] 모듈 07 Capstone (제안서·보고서·루브릭·점검표·검토 프롬프트 템플릿, 실행되는 템플릿 노트북 1종 Mac과 Colab T4에서 실행 확인; 트랙 B~D는 MVP 하나씩 캐시로 시험 실행([기록](07_capstone/examples/dry_runs/README.md)), 질문의 나머지 절반도 대부분 시험 실행([기록](07_capstone/examples/dry_runs/second_halves.md); Geneformer V2-104M 미세조정만 Colab A100에서 학습), 트랙 E는 TraitGym 한 편을 시험 실행([기록](07_capstone/examples/dry_runs/track_E_traitgym.md); 모두 학습자 파일럿 아님); 새 모델은 scGPT whole-human 체크포인트 하나(약 207 MB, 소스 26개는 설치 없이 사용), 새 데이터는 MoleculeNet CSV 3개(약 3.9 MB), TraitGym 지표 CSV 22개(2 KB), CELLxGENE H5AD 1개(150 MB)뿐)
+- [x] resources 보강: [용어집](resources/glossary.md) · [벤치마크 지도](resources/benchmarks.md) · [치트시트 4종](resources/cheatsheets/) (코드 블록은 `.venv`에서 실행 확인), 전체 DOI·arXiv ID 125개와 상대 링크 147개 점검(이후 문서가 늘어 2026-11-10에 상대 링크 208개와 앵커를 다시 점검: 깨진 것 없음; DOI는 다시 대조하지 않음) (외부 URL 10개 중 4개는 자리표시자·디렉터리 주소)
 
 > 최신 모델·논문 정보는 작성 시 문헌 DB로 확인하며, 확인되지 않은 항목은 `⚠️ 미검증`으로 표시한다.

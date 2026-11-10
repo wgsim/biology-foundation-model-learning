@@ -24,3 +24,7 @@ checkpoints/
 # Tool logs (model-bridge MCP)
 .model_bridge/
 .venv-enformer/
+
+# Web book (pilot)
+.venv-book/
+.book_build/

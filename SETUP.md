@@ -26,17 +26,17 @@ print(torch.backends.mps.is_available())
 ```python
 !pip install -q -r https://raw.githubusercontent.com/<your-account>/<repo>/main/requirements/colab.txt
 ```
-또는 저장소를 clone한 뒤 `requirements/colab.txt`를 설치한다. 런타임 유형은 GPU(T4 이상)로 설정.
+또는 저장소를 clone한 뒤 `requirements/colab.txt`를 설치한다. 런타임 유형은 GPU(T4 이상)로 설정한다.
 
-**Colab T4에서 확인한 것** (2026-11-06; GPU 15.6 GB, vCPU 2개, RAM 약 12 GB, Python 3.13, torch 2.14.1, transformers 5.22.1):
-- 이미지에 `Bio`·`rdkit`·`peft`가 없다. `pip install biopython==1.88 rdkit==2026.9.1 peft==0.21.2`.
+**Colab T4에서 확인한 것** (2026-11-06, GPU 15.6 GB, vCPU 2개, RAM 약 12 GB, Python 3.13, torch 2.14.1, transformers 5.22.1):
+- 이미지에 `Bio`·`rdkit`·`peft`가 없다. `pip install biopython==1.88 rdkit==2026.9.1 peft==0.21.2`로 설치한다.
 - 이미지의 `torchao 0.10.0`이 `peft 0.21.2`와 충돌한다(`ImportError: ... torchao`). `pip uninstall -y torchao` 후 커널을 다시 시작한다.
 - `.cache/`가 없으므로 모듈 05·06·07 노트북이 가정하는 캐시(ProteinGym v1.3, 모듈 05의 UniProt 표, 모듈 06/03의 ESM-2 150M·650M `config.json`)를 먼저 받거나 올려야 한다. 모듈 02 노트북 01이 ProteinGym을 받고, 05 노트북 02가 UniProt 표를 받는다.
 - 메모리: ESMFold v1은 가중치를 CPU로 먼저 불러오면 RAM 12 GB를 넘겨 커널이 죽을 수 있다(모듈 02 노트북 04는 `device_map`으로 GPU에 바로 올린다).
 - 노트북별 Colab 실행 시간과 Mac과의 수치 차이는 각 모듈 README(05 §9, 06 §8, 07 §5)에 있다.
 
 ## 3. 기관 클러스터 (🔴)
-Assumption: SLURM 스케줄러, `module` 시스템 사용. 실제 파티션명·모듈명은 기관마다 다르므로 확인 후 수정한다.
+Assumption: SLURM 스케줄러와 `module` 시스템을 사용한다. 실제 파티션명·모듈명은 기관마다 다르므로 확인 후 수정한다.
 ```bash
 #!/bin/bash
 #SBATCH --job-name=bio-fm
@@ -52,7 +52,7 @@ python train.py
 `flash-attn` 등 CUDA 의존 패키지는 클러스터의 CUDA/컴파일러 버전에 맞춰 개별 설치한다.
 
 ## 4. 재현성
-- `requirements/base.lock.txt`: 모듈 01~06 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과 (모듈 04에서 `harmonypy`, `scvi-tools` 등 22개 패키지, 모듈 05에서 `rdkit`, 모듈 06에서 `peft` 추가, 기존 패키지 버전 변경 없음). 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`.
+- `requirements/base.lock.txt`: 모듈 01~06 노트북 실행을 확인한 환경(Python 3.12.13, macOS arm64)의 `uv pip freeze` 결과다. 모듈 04에서 `harmonypy`, `scvi-tools` 등 22개 패키지, 모듈 05에서 `rdkit`, 모듈 06에서 `peft`를 추가했고 기존 패키지 버전은 바뀌지 않았다. 정확히 재현하려면 `uv pip install -r requirements/base.lock.txt`를 실행한다.
 - 이후 모듈에서 패키지를 추가하면 노트북 실행 확인 후 lock 파일을 갱신한다.
 - 모델/데이터셋은 노트북 상단에 ID와 확인 날짜를 기록한다.
 
@@ -63,7 +63,7 @@ uv venv --python 3.12 .venv-enformer
 uv pip install --python .venv-enformer/bin/python -r requirements/enformer.txt
 .venv-enformer/bin/jupyter lab   # 이 환경의 커널로 03_enformer_tracks.ipynb 실행
 ```
-- `.venv-enformer/`는 git에서 제외된다. 검증 환경: Python 3.12, torch 2.15.0, transformers 4.56.2.
+- `.venv-enformer/`는 git에서 제외된다. 검증 환경은 Python 3.12, torch 2.15.0, transformers 4.56.2이다.
 - 모듈 03 노트북 01·02는 기본 `.venv`에서 실행한다.
 - 모듈 03에서 내려받는 모델·데이터 중 **Nucleotide Transformer v1 가중치는 CC BY-NC-SA 4.0(비상업)**이다.
 

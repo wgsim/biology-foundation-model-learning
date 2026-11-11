@@ -1,7 +1,7 @@
 # Biology Foundation Model 학습 로드맵
 
-생물학 foundation model(FM)을 **중급 → 전문가 수준**까지 혼자 학습하기 위한 자료.
-대상: ML·생물학 기초는 이미 있는 학습자. 형식: Markdown 강의노트 + Jupyter 실습.
+생물학 foundation model(FM)을 **중급에서 전문가 수준**까지 혼자 학습하기 위한 자료다.
+대상은 ML·생물학 기초가 이미 있는 학습자이고, 형식은 Markdown 강의노트와 Jupyter 실습이다.
 
 ## 실행 등급
 | 표시 | 환경 |
@@ -10,7 +10,7 @@
 | 🟡 | Google Colab GPU (T4급; 캡스톤 시험 실행 한 건만 A100) |
 | 🔴 | 기관 GPU 클러스터 |
 
-환경 설정은 [SETUP.md](SETUP.md) 참고. 목차·검색이 있는 웹 책으로 보려면 SETUP.md §6(`bash book/build.sh`).
+환경 설정은 [SETUP.md](SETUP.md)를 참고한다. 목차·검색이 있는 웹 책으로 보려면 SETUP.md §6(`bash book/build.sh`)을 따른다.
 
 ## 18주 일정 (주 8~10시간 기준)
 | 주차 | 모듈 | 핵심 목표 |
@@ -32,7 +32,7 @@
 ## 각 모듈 구성
 `README.md`(강의노트) · `notebooks/`(실습) · `exercises.md`(과제)
 
-모듈마다 산출물 1개(단순 baseline 재현 / split 변경 효과 확인 / 동결 표현 vs 미세조정 비교 중 하나)와 데이터 누출 점검 항목을 포함한다. 자세한 내용은 [resources/reading_list.md](resources/reading_list.md)의 운영 메모 참고. 용어는 [glossary](resources/glossary.md), 벤치마크는 [benchmarks](resources/benchmarks.md), 반복 패턴은 [cheatsheets](resources/cheatsheets/).
+모듈마다 산출물 1개(단순 baseline 재현 / split 변경 효과 확인 / 동결 표현 vs 미세조정 비교 중 하나)와 데이터 누출 점검 항목을 포함한다. 자세한 내용은 [resources/reading_list.md](resources/reading_list.md)의 운영 메모를 참고한다. 용어는 [glossary](resources/glossary.md), 벤치마크는 [benchmarks](resources/benchmarks.md), 반복 패턴은 [cheatsheets](resources/cheatsheets/)에 있다.
 
 ## 진행 상태
 - [x] 스캐폴드
@@ -41,10 +41,10 @@
 - [x] 모듈 01 Foundations (강의노트·과제·노트북 3종, 실행 확인)
 - [x] 모듈 02 Protein (강의노트·과제·노트북 4종: 01–03은 Mac에서, 04는 Colab T4에서 실행 확인)
 - [x] 모듈 03 DNA·Genome (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인, 노트북 03은 격리 환경)
-- [x] 모듈 04 Single-cell (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인; Colab T4에서도 01–03 실행 확인)
-- [x] 모듈 05 Multimodal·기타 (강의노트·과제·노트북 2종 모두 Mac에서 실행 확인; Colab T4에서도 2종 모두 실행 확인, 시간은 Mac의 3~6배)
-- [x] 모듈 06 Advanced (강의노트·과제·노트북 3종 Mac에서 실행 확인, Colab T4에서도 01–03 실행 확인; DDP 템플릿은 CPU 2프로세스로만 검증·SLURM 파일은 문법 점검만; 클러스터 미검증)
-- [x] 모듈 07 Capstone (제안서·보고서·루브릭·점검표·검토 프롬프트 템플릿, 실행되는 템플릿 노트북 1종 Mac과 Colab T4에서 실행 확인; 트랙 B~D는 MVP 하나씩 캐시로 시험 실행([기록](07_capstone/examples/dry_runs/README.md)), 질문의 나머지 절반도 대부분 시험 실행([기록](07_capstone/examples/dry_runs/second_halves.md); Geneformer V2-104M 미세조정만 Colab A100에서 학습), 트랙 E는 TraitGym 한 편을 시험 실행([기록](07_capstone/examples/dry_runs/track_E_traitgym.md); 모두 학습자 파일럿 아님); 새 모델은 scGPT whole-human 체크포인트 하나(약 207 MB, 소스 26개는 설치 없이 사용), 새 데이터는 MoleculeNet CSV 3개(약 3.9 MB), TraitGym 지표 CSV 22개(2 KB), CELLxGENE H5AD 1개(150 MB)뿐)
-- [x] resources 보강: [용어집](resources/glossary.md) · [벤치마크 지도](resources/benchmarks.md) · [치트시트 4종](resources/cheatsheets/) (코드 블록은 `.venv`에서 실행 확인), 전체 DOI·arXiv ID 125개와 상대 링크 147개 점검(이후 문서가 늘어 2026-11-10에 상대 링크 208개와 앵커를 다시 점검: 깨진 것 없음; DOI는 다시 대조하지 않음) (외부 URL 10개 중 4개는 자리표시자·디렉터리 주소)
+- [x] 모듈 04 Single-cell (강의노트·과제·노트북 3종 모두 Mac에서 실행 확인, Colab T4에서도 01–03 실행 확인)
+- [x] 모듈 05 Multimodal·기타 (강의노트·과제·노트북 2종 모두 Mac에서 실행 확인, Colab T4에서도 2종 모두 실행 확인, 시간은 Mac의 3~6배)
+- [x] 모듈 06 Advanced (강의노트·과제·노트북 3종 Mac에서 실행 확인, Colab T4에서도 01–03 실행 확인. DDP 템플릿은 CPU 2프로세스로만 검증했고 SLURM 파일은 문법 점검만 했다. 클러스터는 미검증이다)
+- [x] 모듈 07 Capstone: 제안서·보고서·루브릭·점검표·검토 프롬프트 템플릿을 만들었다. 실행되는 템플릿 노트북 1종은 Mac과 Colab T4에서 실행을 확인했다. 트랙 B~D는 MVP 하나씩을 캐시로 시험 실행했다([기록](07_capstone/examples/dry_runs/README.md)). 질문의 나머지 절반도 대부분 시험 실행했고([기록](07_capstone/examples/dry_runs/second_halves.md)), Geneformer V2-104M 미세조정만 Colab A100에서 학습했다. 트랙 E는 TraitGym 한 편을 시험 실행했다([기록](07_capstone/examples/dry_runs/track_E_traitgym.md)). 시험 실행은 모두 학습자 파일럿이 아니다. 새 모델은 scGPT whole-human 체크포인트 하나(약 207 MB, 소스 26개는 설치 없이 사용)이고, 새 데이터는 MoleculeNet CSV 3개(약 3.9 MB), TraitGym 지표 CSV 22개(2 KB), CELLxGENE H5AD 1개(150 MB)뿐이다.
+- [x] resources 보강: [용어집](resources/glossary.md) · [벤치마크 지도](resources/benchmarks.md) · [치트시트 4종](resources/cheatsheets/) (코드 블록은 `.venv`에서 실행 확인). 전체 DOI·arXiv ID 125개와 상대 링크 147개를 점검했다. 이후 문서가 늘어 2026-11-10에 상대 링크 208개와 앵커를 다시 점검했고 깨진 것은 없었다. DOI는 다시 대조하지 않았다. 외부 URL 10개 중 4개는 자리표시자·디렉터리 주소다.
 
 > 최신 모델·논문 정보는 작성 시 문헌 DB로 확인하며, 확인되지 않은 항목은 `⚠️ 미검증`으로 표시한다.

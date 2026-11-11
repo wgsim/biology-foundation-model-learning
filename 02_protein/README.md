@@ -44,7 +44,7 @@
 | 다중 트랙 생성 | ESM3 | 서열·구조·기능 등† | 조건부 생성 | 상세는 논문 확인† |
 | 구조 예측 | AlphaFold 2, ESMFold, AlphaFold 3, ESMFold2, Boltz-1/2, Chai-1 | 서열(+MSA)(+리간드·핵산) | 3D 좌표 + 신뢰도 | AF2는 MSA 기반, ESMFold는 단일 서열 + PLM, AF3는 확산 기반 복합체 예측 |
 | 설계(서열) | ProteinMPNN, ESM-IF1 | 백본 구조 → 서열 (inverse folding) | 서열 설계 | ESM-IF1은 AF2 예측 구조로 학습 데이터를 늘림 |
-| 설계(백본) | RFdiffusion | 확산 모델 | 백본/기능 설계 | 설계 → ProteinMPNN → 구조 재예측의 파이프라인이 흔함 |
+| 설계(백본) | RFdiffusion | 확산 모델 | 백본/기능 설계 | 설계, ProteinMPNN, 구조 재예측으로 이어지는 파이프라인이 흔하다 |
 | 변이 효과 | ESM-1v, EVE, AlphaMissense | 서열 분포/진화 정보 | 병원성·fitness 예측 | EVE는 MSA 기반 생성 모델, 라벨 없이 학습 |
 | 벤치마크 | TAPE, FLIP, PEER, ProteinGym | — | 평가 | ProteinGym: 논문 초록 기준 250개 이상의 DMS assay + 임상 데이터. 이 모듈에서 내려받는 v1.3 치환 파일에는 217개 assay가 들어 있다 |
 

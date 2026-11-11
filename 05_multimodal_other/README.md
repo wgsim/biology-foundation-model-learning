@@ -39,8 +39,8 @@
 | 표현 | 예 | 같은 분자에 대한 불변성 | 비고 |
 |---|---|---|---|
 | **SMILES 문자열** | `CCO`, `OCC` | ✗ 표기마다 다른 문자열(노트북 01 §8) | 언어모델 입력. 사전학습 시 표기 정규화 여부는 모델 카드가 없어 **확인하지 못함** |
-| **ECFP** (원형 지문) | 반지름 2, 2048칸 count | ✓ 그래프에서 계산 | 학습이 없다. 해시 충돌, 칸 수·반지름은 고정(튜닝하지 않음) |
-| **RDKit 기술자** | 217개 중 상수 열을 뺀 199~211개 (MolLogP, TPSA, 단편 개수 등) | ✓ | 값 범위가 극단적 → 부호 있는 `log1p` 후 표준화 |
+| **ECFP** (원형 지문) | 반지름 2, 2048칸 count | ✓ 그래프에서 계산 | 학습이 없다. 해시 충돌이 있고, 칸 수·반지름은 고정이다(튜닝하지 않았다) |
+| **RDKit 기술자** | 217개 중 상수 열을 뺀 199~211개 (MolLogP, TPSA, 단편 개수 등) | ✓ | 값 범위가 극단적이어서 부호 있는 `log1p` 후 표준화한다 |
 | **그래프 / 3D** | Chemprop, Uni-Mol† | ✓ (구조 기반) | 이 모듈에서는 실행하지 않음 |
 
 **ChemBERTa-77M이 무엇인지** 확인한 사실은 이렇다. 3층, 은닉 384, 어휘 600, 최대 위치 515의 RoBERTa형 모델이고, 풀러를 뺀 매개변수는 약 330만 개다(저장소 `config.json`과 로드한 모델에서 확인). "77M"은 매개변수 수가 아니라 사전학습에 쓴 PubChem 분자 수다. ChemBERTa-2 초록에 최대 77M 화합물이라고 적혀 있다. 두 변형은 사전학습 목표가 다르다. **MLM**은 마스크 토큰 예측이고 **MTR**은 multi-task regression이다. MTR 체크포인트에는 `regression.*` 층과 `norm_mean/norm_std`가 들어 있다. 회귀 목표가 *RDKit으로 계산한 분자 성질*이라는 서술은 모델 카드가 없어 논문 본문에서 확인해야 한다†. 노트북 01 §9가 이를 *간접적으로* 점검한다.
@@ -238,7 +238,7 @@ Recall@k는 후보 수에 의존한다. 후보가 약 1,479개면 우연 수준�
 | # | 파일 | 등급 | 시간(Mac) | 내용 |
 |---|---|---|---|---|
 | 01 | [01_chemical_lm_vs_fingerprints](notebooks/01_chemical_lm_vs_fingerprints.ipynb) | 🟢 | 약 10분 (표현 계산 44초, 교차검증 약 5분, 부트스트랩 약 2분) | MoleculeNet 3종, 분할 3종과 누출 측정, ECFP·기술자·ChemBERTa·무작위 초기화, 층/풀링·표기·MTR 점검 |
-| 02 | [02_protein_text_contrastive](notebooks/02_protein_text_contrastive.ipynb) | 🟢 | 약 7분 (첫 실행의 ESM-2 임베딩 125초 포함; 임베딩 캐시가 있으면 약 5분) | UniProt 서열–기능 텍스트 대조 정렬: Pfam 묶음, 근접 중복, 동점, 민감도 |
+| 02 | [02_protein_text_contrastive](notebooks/02_protein_text_contrastive.ipynb) | 🟢 | 약 7분 (첫 실행의 ESM-2 임베딩 125초 포함, 임베딩 캐시가 있으면 약 5분) | UniProt 서열–기능 텍스트 대조 정렬: Pfam 묶음, 근접 중복, 동점, 민감도 |
 
 - 노트북은 저장소에 **출력 없이** 커밋한다.
 - 내려받는 파일은 다음과 같다. MoleculeNet CSV 3개 합 약 0.5 MB, ChemBERTa-77M-MLM과 MTR 각 약 14 MB, UniProt TSV 약 3.4 MB(gz), all-MiniLM-L6-v2 약 91 MB, pip로 받는 rdkit 약 26 MB다. ESM-2 35M은 모듈 02의 캐시를 쓴다. 모두 git에서 제외한 `.cache/`에 받는다.

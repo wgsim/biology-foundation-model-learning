@@ -7,7 +7,7 @@
 | 표시 | 환경 |
 |---|---|
 | 🟢 | Mac 로컬 (CPU/MPS) |
-| 🟡 | Google Colab GPU (T4급; 캡스톤 시험 실행 한 건만 A100) |
+| 🟡 | Google Colab GPU (T4급, 캡스톤 시험 실행 한 건만 A100) |
 | 🔴 | 기관 GPU 클러스터 |
 
 환경 설정은 [SETUP.md](SETUP.md)를 참고한다. 목차·검색이 있는 웹 책으로 보려면 SETUP.md §6(`bash book/build.sh`)을 따른다.

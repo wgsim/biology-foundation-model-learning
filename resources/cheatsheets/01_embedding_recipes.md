@@ -131,8 +131,8 @@ print("예: 위치 5", seq[4], "→ A:", round(float(mm_score(table, seq, 5, "A"
 |---|---|
 | 배치와 단독 임베딩이 다름 | 패딩을 평균에 포함 / attention mask 누락 |
 | 변이 위치가 한 칸 어긋남 | `<cls>` 때문에 토큰 인덱스 = 1-based 위치. 0-based로 착각 |
-| 서열 길이가 긴데 OOM | 위치 전체를 한 배치로 처리 → 청크로 나눈다 |
+| 서열 길이가 긴데 OOM | 위치 전체를 한 배치로 처리한 것이 원인이다. 청크로 나눈다 |
 | MPS에서 `log_softmax` 수치 차이 | `.float()`로 올려 계산 |
 | 재실행마다 다른 결과 | 리비전 미고정, `model.eval()` 누락(드롭아웃) |
-| 캐시 위치 설정이 안 먹음 | `HF_HOME`을 `transformers`/`huggingface_hub` import **뒤에** 설정 (이 파일을 처음 돌릴 때 실제로 겪음) |
+| 캐시 위치 설정이 안 먹음 | `HF_HOME`을 `transformers`/`huggingface_hub` import **뒤에** 설정한 것이 원인이다 (이 파일을 처음 실행할 때 실제로 겪었다) |
 | 임베딩 캐시가 다른 모델의 것 | 캐시 파일명에 모델 ID·리비전·층을 넣는다 |

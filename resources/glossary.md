@@ -60,7 +60,7 @@
 | 그룹 부트스트랩 | group bootstrap | 상관 단위(그룹)를 복원추출해 구간을 구함. test 군집이 적으면 무의미 | 07 |
 | 조건부 구간 | conditional interval | 학습·초기화를 고정하고 test만 다시 뽑아 얻은 구간. 학습 변동은 반영하지 않는다 | 07 |
 | Spearman 상관 | Spearman correlation | 순위 상관. 상수 예측에서는 정의되지 않음(NaN) | 02 |
-| AUROC | ROC-AUC | 무작위로 고른 양성이 음성보다 높게 점수 매겨질 확률(동점은 1/2로 셈). 순위 성능이며 확률 보정(calibration)과 별개. 폴드 모델 점수는 폴드별로 구해 평균 | 05 |
+| AUROC | ROC-AUC | 무작위로 고른 양성이 음성보다 높게 점수 매겨질 확률(동점은 1/2로 셈). 순위 성능이며 확률 보정(calibration)과 별개. 폴드 모델 점수는 폴드별로 구해 평균한다 | 05 |
 | AUPRC | average precision (AP) / PR-AUC | 양성이 드문 분류에 적합. `average_precision_score`는 계단식 적분인 AP로 PR 곡선의 사다리꼴 면적과 약간 다르다. 무작위 기준은 대략 양성 비율(유병률에 의존) | 03 |
 | macro-F1 | macro-averaged F1 | 클래스별 F1의 단순 평균. 불균형 데이터에서 클래스를 동등하게 본다 | 04 |
 | 균형정확도 | balanced accuracy | 클래스별 재현율의 단순 평균. 균등 추측 기준은 *그 평가 집합에 있는 클래스 수*의 역수다 | 04, 07 |
@@ -84,7 +84,7 @@
 | DMS | deep mutational scanning | 많은 변이의 효과를 한 번에 측정하는 실험. 노이즈가 있다 | 02 |
 | 적합도 | fitness | DMS에서 측정한 변이의 기능/성장 점수. 임상 병원성과 목표가 다르다 | 02 |
 | 상위성 | epistasis | 변이 효과가 단순 합이 아니라 서로 의존함 | 02 |
-| masked marginal | masked marginal | 변이 위치를 가렸을 때 변이 아미노산과 야생형의 log 확률 차이로 점수를 매김. 마스크 없이 야생형 서열 1회로 모든 위치를 점수화하는 wild-type marginal(싸지만 야생형 잔기가 입력에 보임), 변이/야생형 서열 각각의 의사 로그우도(pseudo-log-likelihood, PLL) 비율(비싸지만 다중 변이로 확장 가능)과 구별한다 | 02 |
+| masked marginal | masked marginal | 변이 위치를 가렸을 때 변이 아미노산과 야생형의 log 확률 차이로 점수를 매긴다. 마스크 없이 야생형 서열 1회로 모든 위치를 점수화하는 wild-type marginal(싸지만 야생형 잔기가 입력에 보임), 변이/야생형 서열 각각의 의사 로그우도(pseudo-log-likelihood, PLL) 비율(비싸지만 다중 변이로 확장 가능)과 구별한다 | 02 |
 | contact map | contact map | 잔기 쌍의 3차원 근접 여부 행렬. 어텐션에서 읽어내는 연구가 있다. 예측 평가에는 상위 L(또는 L/5)개 예측의 정밀도(precision@L/5)를 흔히 쓴다(모듈 02 노트북 03) | 02 |
 | pLDDT | predicted LDDT | 구조 예측의 잔기별 신뢰도(0~100) | 02 |
 | PAE / pAE | predicted aligned error | 한 잔기를 기준으로 정렬했을 때 다른 잔기 위치의 예상 오차(잔기 쌍 단위) | 02 |
@@ -120,7 +120,7 @@
 |---|---|---|---|
 | 카운트 행렬 | count matrix | 세포 × 유전자 UMI 카운트 | 04 |
 | HVG | highly variable genes | 세포 간 변동이 큰 유전자 선택 | 04 |
-| 순위값 인코딩 | rank value encoding | 깊이 정규화 → 유전자별 코퍼스 중앙값으로 나눔 → 값 내림차순의 유전자 ID 열. Geneformer | 04 |
+| 순위값 인코딩 | rank value encoding | 깊이 정규화 후 유전자별 코퍼스 중앙값으로 나누고, 값 내림차순으로 정렬한 유전자 ID 열이다. Geneformer | 04 |
 | 희소성 | sparsity (zeros) | 단일세포 카운트의 대부분이 0인 성질. 생물학적 무발현과 기술적 검출 실패가 섞여 있다† | 04, 05 |
 | 배치 효과 | batch effect | 실험 조건 차이에서 오는 비생물학적 변동 | 04 |
 | 배치 보정 | batch correction / integration | 배치 신호를 줄이는 방법(Harmony, scVI 등) | 04 |
@@ -166,6 +166,6 @@
 |---|---|
 | 🟢 🟡 🔴 | 실행 등급: Mac 로컬 / Colab GPU / 클러스터 |
 | † | 논문 본문·공식 문서에서 확인하지 못한 서술 |
-| ⚠️ 미검증 | 사용 전 직접 확인할 것 |
+| ⚠️ 미검증 | 사용 전 직접 확인해야 한다 |
 | ✅ PubMed / bioRxiv / Web / Crossref | 서지 확인에 쓴 출처 (reading_list 범례) |
 | ★ ◆ ○ | 필수 / 심화 / 선택 읽기 |

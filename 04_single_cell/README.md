@@ -36,7 +36,7 @@
 ## 2. 세포를 토큰열로: 표현 설계
 | 방식 | 대표 모델 | 아이디어 | 버리는 것 / 위험 |
 |---|---|---|---|
-| **순위 기반** (rank value encoding) | Geneformer | 깊이로 정규화 → 유전자별 코퍼스 중앙값으로 나눔 → 값 내림차순으로 정렬한 **유전자 ID 열** | 값의 크기, 세부 비율. 저깊이 데이터에서 카운트=1 유전자는 중앙값 순서로 고정(노트북 01) |
+| **순위 기반** (rank value encoding) | Geneformer | 깊이로 정규화한 뒤 유전자별 코퍼스 중앙값으로 나누고, 값 내림차순으로 정렬한 **유전자 ID 열**이다 | 값의 크기, 세부 비율. 저깊이 데이터에서 카운트=1 유전자는 중앙값 순서로 고정(노트북 01) |
 | **값 구간화 + 유전자 토큰** | scGPT† | 유전자 토큰 임베딩과 표현량을 구간(bin)으로 나눈 값 임베딩을 더함, 생성형 사전학습 | 구간화 해상도, 유전자 선택(고변이 유전자 등) 의존 † |
 | **연속값 입력 + 고정 유전자 vocab** | scFoundation† | 약 2만 개 유전자를 고정 vocab으로 두고 연속 표현량을 직접 임베딩, 읽기 깊이 정보 활용 † | 모델 구조가 비대칭(인코더-디코더) † |
 | **유전자=단백질 임베딩** | UCE† | 유전자의 표현을 단백질 언어모델(ESM-2) 임베딩에서 가져와 종·유전자 집합을 가로질러 일반화하려는 시도 † | 단백질 서열 유사성 가정, 비코딩 RNA 제외 † |
@@ -185,9 +185,9 @@ test 지표로 설정을 고르면 test에 맞춘 낙관적인 값이 된다. �
 ## 11. 노트북
 | # | 파일 | 등급 | 시간(Mac, 일부만 실측) | 내용 |
 |---|---|---|---|---|
-| 01 | [01_geneformer_tokenize_embed](notebooks/01_geneformer_tokenize_embed.ipynb) | 🟢 | V1 68초, V2 임베딩 673~816초(두 번 실행; 전체 약 15~17분, 다른 작업과 동시 실행) | 데이터 점검, pickle 안전 로딩, rank value encoding 구현·성질 검사, V1/V2/무작위 초기화 임베딩 추출, 마스크 유전자 예측 점검 |
-| 02 | [02_embeddings_vs_baselines](notebooks/02_embeddings_vs_baselines.ipynb) | 🟢 | scVI 학습 134초 (전체 시간 미측정; 실행마다 달라짐) | PCA·Harmony·scVI vs Geneformer: LODO macro-F1, ARI/NMI, 배치 혼합, 질병 신호, 민감도 |
-| 03 | [03_robustness_ablation](notebooks/03_robustness_ablation.ipynb) | 🟢 | V2 임베딩 219초 + 253초 (전체 시간 미측정; 실행마다 달라짐) | 이항 솎아내기 견고성, 깊이 인코딩 R², 입력 ablation |
+| 01 | [01_geneformer_tokenize_embed](notebooks/01_geneformer_tokenize_embed.ipynb) | 🟢 | V1 68초, V2 임베딩 673~816초(두 번 실행, 전체 약 15~17분, 다른 작업과 동시 실행) | 데이터 점검, pickle 안전 로딩, rank value encoding 구현·성질 검사, V1/V2/무작위 초기화 임베딩 추출, 마스크 유전자 예측 점검 |
+| 02 | [02_embeddings_vs_baselines](notebooks/02_embeddings_vs_baselines.ipynb) | 🟢 | scVI 학습 134초 (전체 시간 미측정, 실행마다 달라짐) | PCA·Harmony·scVI vs Geneformer: LODO macro-F1, ARI/NMI, 배치 혼합, 질병 신호, 민감도 |
+| 03 | [03_robustness_ablation](notebooks/03_robustness_ablation.ipynb) | 🟢 | V2 임베딩 219초 + 253초 (전체 시간 미측정, 실행마다 달라짐) | 이항 솎아내기 견고성, 깊이 인코딩 R², 입력 ablation |
 
 - 02와 03은 01이 만든 `.cache/singlecell/` 파일을 읽는다. 노트북은 저장소에 **출력 없이** 커밋한다.
 - 내려받는 파일: PBMC H5AD 약 217 MB(CELLxGENE), Geneformer V1-10M 약 41 MB + V2-104M 약 418 MB, 유전자 사전 pkl 합 약 8 MB. 모두 `.cache/`(git 제외).

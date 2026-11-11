@@ -150,8 +150,8 @@ test 결과로 층을 골라 그 test 점수를 주 결과로 보고한 것은 "
 | [examples/example_track_A_proposal_and_report.md](examples/example_track_A_proposal_and_report.md) | 채워진 예시 |
 | [examples/dry_runs/README.md](examples/dry_runs/README.md) | 트랙 B·C·D 시험 실행 기록 + 스크립트 3개 (캐시만 사용) |
 | [examples/track_E_candidates.md](examples/track_E_candidates.md) | 트랙 E 후보 논문 5편 조사(4가지 조건 적용) |
-| [examples/dry_runs/track_E_traitgym.md](examples/dry_runs/track_E_traitgym.md) | 트랙 E 시험 실행 기록(TraitGym L1+L3, 본문 주장 점검, 표·그림 대조) + 스크립트 3개; 공개 지표 CSV 22개(2,058 B)를 승인 후 내려받음 |
-| [examples/dry_runs/second_halves.md](examples/dry_runs/second_halves.md) | 질문의 나머지 절반 시험 실행 기록 + 스크립트 11개 (A①②③ B① C①②③④·C③-V2 D②③⑤; D③은 MoleculeNet CSV 3개, C②는 CELLxGENE H5AD 1개, C④는 scGPT 소스 26개와 체크포인트(약 207 MB)를 승인 후 내려받음) |
+| [examples/dry_runs/track_E_traitgym.md](examples/dry_runs/track_E_traitgym.md) | 트랙 E 시험 실행 기록(TraitGym L1+L3, 본문 주장 점검, 표·그림 대조)과 스크립트 3개. 공개 지표 CSV 22개(2,058 B)는 승인 후 내려받았다 |
+| [examples/dry_runs/second_halves.md](examples/dry_runs/second_halves.md) | 질문의 나머지 절반 시험 실행 기록과 스크립트 11개 (A①②③ B① C①②③④·C③-V2 D②③⑤. D③은 MoleculeNet CSV 3개, C②는 CELLxGENE H5AD 1개, C④는 scGPT 소스 26개와 체크포인트(약 207 MB)를 승인 후 내려받았다) |
 
 - 노트북은 저장소에 **출력 없이** 커밋된다. 내려받는 파일도, 설치할 것도 없다.
 

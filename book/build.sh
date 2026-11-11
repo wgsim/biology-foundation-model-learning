@@ -38,5 +38,13 @@ done
 
 # 3) 빌드
 cd "$B"
+# 이전 빌드의 site·html 출력이 쌓이면(해시 이름이 다른 첨부 사본이 누적됨) 콘텐츠 서버가 연결을 끊어
+# `fetch failed (ECONNRESET)`로 html이 0쪽이 되는 일이 있었다. 출력만 비우고 테마 캐시(templates/)는 둔다.
+TRASH=/opt/homebrew/opt/trash/bin/trash
+if [ -x "$TRASH" ]; then
+  for d in _build/site _build/html; do [ -e "$d" ] && "$TRASH" "$d"; done
+else
+  echo "경고: trash가 없어 이전 빌드 출력을 비우지 못했다. 빌드가 fetch failed로 실패하면 $B/_build/site, _build/html을 직접 지우고 다시 실행한다."
+fi
 "$ROOT/.venv-book/bin/jupyter-book" build --html 2>&1 | grep -v "Duplicate identifier\|^   In files:" || true
 echo "빌드 결과: $B/_build/html"

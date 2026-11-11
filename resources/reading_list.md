@@ -8,7 +8,7 @@
 - ✅ bioRxiv: bioRxiv API로 확인 (프리프린트 — 동료심사 전 버전일 수 있음)
 - ✅ Web: 웹 검색 결과에서 제목·저자·ID 확인 (arXiv·학회 논문집 등, PubMed 미색인)
 - ✅ Crossref: Crossref API로 제목·저널·권·쪽·연도 확인 (PubMed 조회가 일시 실패했을 때 사용; 초록 수준 서술 확인은 Semantic Scholar 초록)
-- ⚠️ 미검증: 확인되지 않음. 사용 전 직접 확인할 것
+- ⚠️ 미검증: 확인되지 않음. 사용 전 직접 확인해야 한다.
 
 **필수도** (최신성·성격과 분리, 필수도 배정은 작성자 판단 + 검토 모델 의견): ★ 필수 · ◆ 심화 · ○ 선택(트랙/관심 시)
 **태그**: [복습] 중급 이상이면 가볍게 · [최신] · [비판] 한계·과대평가 검증 · [기준선] FM 이전 방법(비교 대상) · [벤치마크] · [지도]/[자기지도] 학습 방식 · [실습] 노트북 경로에 직결
@@ -78,7 +78,7 @@
 | ○ [벤치마크] | Grešová et al., *Genomic benchmarks: a collection of datasets for genomic sequence classification* (BMC Genom Data 2023;24:25) — 조절 요소(프로모터·인핸서·열린 염색질) 분류 9개 데이터셋, 사람·생쥐·선충, 간단한 CNN baseline 포함(초록) | 10.1186/s12863-023-01123-8 | ✅ PubMed |
 | ◆ [자기지도] | Benegas et al., *GPN-MSA: an alignment-based DNA language model for genome-wide variant effect prediction* (bioRxiv 2023-10) → *A DNA language model based on multispecies alignment predicts the effects of genome-wide variants* (Nat Biotechnol 2025;43:1960–1965, Brief Communication) | 10.1038/s41587-024-02511-w | ✅ Web |
 
-> 토론 포인트: Enformer·Borzoi 같은 **지도학습** 모델과 DNABERT·NT·Evo 같은 **자기지도 사전학습** 모델은 학습 목적이 다르다. 규모만으로 같은 범주에서 순위를 매기지 말 것.
+> 토론 포인트: Enformer·Borzoi 같은 **지도학습** 모델과 DNABERT·NT·Evo 같은 **자기지도 사전학습** 모델은 학습 목적이 다르다. 규모만으로 같은 범주에서 순위를 매겨서는 안 된다.
 
 ## 04 Single-cell
 | 필수도 | 논문 | 출처 / DOI | 검증 |
@@ -98,7 +98,7 @@
 | ★ [비판][최신] | Ahlmann-Eltze, Huber, Anders, *Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines* (Nat Methods 2025;22:1657–1661) | 10.1038/s41592-025-02772-6 | ✅ PubMed |
 | ○ [프레임워크][최신] | Qiu et al., *BioLLM: A standardized framework for integrating and benchmarking single-cell foundation models* (Patterns 2025) — 모델이 아니라 평가·통합 도구 | 10.1016/j.patter.2025.101326 | ✅ PubMed |
 
-> 토론 포인트: 비판 논문은 **특정 과제(zero-shot 임베딩, 섭동 예측)**에서의 결과다. 한 과제의 실패를 FM 전체의 실패로 일반화하지 말고, 어떤 조건에서 단순 baseline이 이기는지 정리할 것. donor·study·batch 단위 분할 확인.
+> 토론 포인트: 비판 논문은 **특정 과제(zero-shot 임베딩, 섭동 예측)**에서의 결과다. 한 과제의 실패를 FM 전체의 실패로 일반화해서는 안 된다. 어떤 조건에서 단순 baseline이 이기는지 정리해야 한다. donor·study·batch 단위 분할을 확인해야 한다.
 
 ## 05 Multimodal · 기타
 | 필수도 | 논문 | 출처 / DOI | 검증 |
@@ -139,7 +139,7 @@
 | ○ [병리] | Vorontsov et al., *A foundation model for clinical-grade computational pathology and rare cancers detection* (Virchow, Nat Med 2024;30:2924–2935) · Xu et al., *A whole-slide foundation model for digital pathology from real-world data* (Prov-GigaPath, Nature 2024;630:181–188) | 10.1038/s41591-024-03141-0 · 10.1038/s41586-024-07441-w | ✅ Crossref |
 | ○ [에이전트][벤치마크] | Laurent et al., *LAB-Bench: Measuring Capabilities of Language Models for Biology Research* (2024; 프리프린트) — 연구 실무형 객관식 2,400문항 이상 | arXiv:2407.10362 | ✅ Web |
 
-> 에이전트 항목은 모델 성능이 아니라 **도구 사용·에이전트 평가**를 다룬다. 구분해서 읽을 것.
+> 에이전트 항목은 모델 성능이 아니라 **도구 사용·에이전트 평가**를 다룬다. 구분해서 읽어야 한다.
 
 ## 06 Advanced — 적응 · 해석 · 효율화 · 벤치마크 · 책임성
 | 필수도 | 논문 | 출처 / DOI | 검증 |
@@ -157,7 +157,7 @@
 | ★ [책임성] | Baker & Church, *Protein design meets biosecurity* (Science 2024;383:349) — 제목 수준만 확인(짧은 글) | 10.1126/science.ado1671 | ✅ Crossref |
 | ◆ [책임성] | Sandbrink, *Artificial intelligence and biological misuse: Differentiating risks of language models and biological design tools* (2023; 초록: LLM은 비전문가의 장벽을 낮추고 생물 설계 도구(BDT)는 숙련된 행위자의 능력을 넓힐 수 있다고 구분) | arXiv:2306.13952 | ✅ Web |
 
-(검증·분할 관련 필독은 01의 DOME·MMseqs2, 벤치마크는 02·03의 TAPE/FLIP/PEER/BEND 참고.)
+(검증·분할 관련 필독은 01의 DOME·MMseqs2, 벤치마크는 02·03의 TAPE/FLIP/PEER/BEND를 참고한다.)
 
 ## 07 Capstone — 재현 · 보고 · 문서화
 | 필수도 | 논문 | 출처 / DOI | 검증 |
@@ -166,21 +166,21 @@
 | ◆ [문서화] | Mitchell et al., *Model Cards for Model Reporting* (초록: 공개 모델에 의도한 사용 사례와 성능 특성을 담은 문서를 동반하자고 제안; 게재처는 직접 확인 안 됨) | arXiv:1810.03993 | ✅ Web |
 | ◆ [문서화] | Gebru et al., *Datasheets for datasets* (Commun ACM 2021;64:86–92; 초록: 데이터셋의 동기·구성·수집 과정·권장 용도 등을 문서화하자고 제안) | 10.1145/3458723 | ✅ Crossref |
 
-(검증·분할 관련 필독은 01의 DOME·MMseqs2, 비판적 평가 논문은 각 모듈 구역 참고.)
+(검증·분할 관련 필독은 01의 DOME·MMseqs2, 비판적 평가 논문은 각 모듈 구역을 참고한다.)
 
 ---
 
 ## 남은 불확실성 (⚠️)
-- ⚠️ ESM C: 동료심사 논문이 확인되지 않음(블로그·모델 카드만). 라이선스 변동 가능.
-- 모듈 07 읽기 목록: Pineau·Mitchell은 arXiv 초록까지만 확인(학술지/학회 게재 여부 미확인). Gebru는 Crossref 서지 + arXiv 초록.
-- 모듈 06 읽기 목록: Sledzieski·ZeRO·FSDP·Raji·Baker & Church는 제목·서지 수준만 확인(초록 미확인). LoRA·SAE·혼합 정밀도·Biderman·Sandbrink는 arXiv 초록까지 확인, 학회/학술지 게재 여부는 미확인(FlashAttention은 NeurIPS 2022 게재를 Crossref로 확인).
-- ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni, ESMFold2 프리프린트: 프리프린트 상태만 확인. 저널 게재판은 못 찾음(없다는 뜻은 아님).
-- ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론 미확인.
-- ⚠️ Uni-Mol: DOI 없음(OpenReview 기준 인용).
-- ⚠️ Chai-1: 사전판 게시일이 출처마다 하루 차이(10/10 vs 10/11); DOI로 인용.
-- ⚠️ 모듈 05: ChemBERTa-2·ProtST·Praski·Guo·de Jong·LAB-Bench는 arXiv 수준(초록)만 확인, 학술지/학회 게재 여부 미확인. ProTrek·CellWhisperer는 제목·DOI만 확인(저자·저널판 미확인). UNI/CONCH/UNI2-h·Virchow·Prov-GigaPath 가중치는 Hugging Face에서 접근 승인(gated)이 필요하다(HF 메타데이터 `gated=auto` 기준; 라이선스 UNI/CONCH는 cc-by-nc-nd-4.0로 표기). 이 저장소의 노트북은 이들을 쓰지 않는다.
+- ⚠️ ESM C: 동료심사 논문이 확인되지 않았다(블로그·모델 카드만 있다). 라이선스가 바뀔 수 있다.
+- 모듈 07 읽기 목록: Pineau·Mitchell은 arXiv 초록까지만 확인했다(학술지/학회 게재 여부는 미확인). Gebru는 Crossref 서지와 arXiv 초록을 확인했다.
+- 모듈 06 읽기 목록: Sledzieski·ZeRO·FSDP·Raji·Baker & Church는 제목·서지 수준만 확인했다(초록 미확인). LoRA·SAE·혼합 정밀도·Biderman·Sandbrink는 arXiv 초록까지 확인했고 학회/학술지 게재 여부는 미확인이다(FlashAttention은 NeurIPS 2022 게재를 Crossref로 확인했다).
+- ⚠️ UCE, Ribonanza, Boltz-1/2, Chai-1, Biomni, ESMFold2 프리프린트: 프리프린트 상태만 확인했다. 저널 게재판은 찾지 못했다(없다는 뜻은 아니다).
+- ⚠️ scBERT: Matters Arising(2024-12)의 내용·결론은 미확인이다.
+- ⚠️ Uni-Mol: DOI가 없다(OpenReview 기준으로 인용했다).
+- ⚠️ Chai-1: 사전판 게시일이 출처마다 하루 차이가 난다(10/10 vs 10/11). DOI로 인용한다.
+- ⚠️ 모듈 05: ChemBERTa-2·ProtST·Praski·Guo·de Jong·LAB-Bench는 arXiv 수준(초록)만 확인했고 학술지/학회 게재 여부는 미확인이다. ProTrek·CellWhisperer는 제목·DOI만 확인했고 저자·저널판은 미확인이다. UNI/CONCH/UNI2-h·Virchow·Prov-GigaPath 가중치는 Hugging Face에서 접근 승인(gated)이 필요하다(HF 메타데이터 `gated=auto` 기준이며, 라이선스는 UNI/CONCH가 cc-by-nc-nd-4.0로 표기되어 있다). 이 저장소의 노트북은 이들을 쓰지 않는다.
 
 ## 운영 메모 (교차 검토 반영)
 - 읽기만으로는 18주에 전문가 수준에 닿기 어렵다. **모듈마다 산출물 1개**: (a) 단순 baseline 재현, (b) split 변경 효과 확인, (c) 동결 표현 vs 미세조정 비교 중 하나.
 - 모듈마다 데이터 누출 점검 항목: 단백질=상동성, 유전체=중복·상동 구간, 단일세포=donor·study·batch, 분자=scaffold·시간 분할, 공통=사전학습 데이터와 평가 데이터의 중복.
-- 검토 모델 간 이견은 본문에 병기(예: Mamba). 검토 모델의 서지 주장은 도구로 확인된 것만 반영.
+- 검토 모델 간 이견은 본문에 병기했다(예: Mamba). 검토 모델의 서지 주장은 도구로 확인된 것만 반영했다.

@@ -34,7 +34,7 @@ print({m: round(budget_gb(650e6, m, 1.35e6), 2) for m in ["infer_fp32", "infer_b
 
 ## 2. 연산량 어림
 - 트랜스포머 학습 연산량 $C \approx 6ND$ (N 매개변수, D 토큰)†, 순전파 $\approx 2ND$†. 모듈 06은 이 식과 Mac MPS 측정 처리량으로 시간을 어림했다.
-- 시간 어림 = 연산량 ÷ **같은 장비·같은 구현에서 측정한 처리량**(FLOP/s 또는 token/s; 단위를 맞춘다). 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다: Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 반대로 모듈 06 노트북 01(LoRA·전체 파인튜닝, GPU 중심)은 T4가 721초로 Mac MPS의 약 1,156초보다 빨랐고, CPU 위주인 모듈 05 노트북 01(sklearn 교차검증)은 Colab(vCPU 2개)에서 약 60분으로 Mac의 약 10분보다 훨씬 느렸다. 단일 실행이며 반복 측정이 아니다.
+- 시간은 연산량을 **같은 장비·같은 구현에서 측정한 처리량**(FLOP/s 또는 token/s)으로 나눠 어림하며, 단위를 맞춘다. 다른 장비로 옮길 때는 다시 측정한다. 모듈 04에서 Colab T4가 Mac MPS보다 빠르다고 가정할 수 없음을 측정했다. Geneformer V2-104M 추론(fp32)이 T4 788초, Mac 673초였고, CPU 학습인 scVI는 Colab 2코어에서 757초, Mac에서 134초였다. 반대로 모듈 06 노트북 01(LoRA·전체 파인튜닝, GPU 중심)은 T4가 721초로 Mac MPS의 약 1,156초보다 빨랐고, CPU 위주인 모듈 05 노트북 01(sklearn 교차검증)은 Colab(vCPU 2개)에서 약 60분으로 Mac의 약 10분보다 훨씬 느렸다. 단일 실행이며 반복 측정이 아니다.
 
 ## 3. 측정값 (Mac MPS, ESM-2 35M, 배치 4, forward+backward 중앙값 3회)
 메모리는 MPS **드라이버 할당량**이라 peak가 아닌 *대리 지표*다. 같은 설정의 시간이 실행마다 약 10% 흔들렸다.
@@ -46,8 +46,8 @@ print({m: round(budget_gb(650e6, m, 1.35e6), 2) for m in ["infer_fp32", "infer_b
 | 1024 | 1.00 s · 7.84 GB | 0.98 s · 7.85 GB | 1.11 s · 7.90 GB | 1.28 s · 2.48 GB |
 
 (모듈 06 README §5-C의 표와 같다.) 읽는 법:
-- 서열 길이 128 → 1024에서 메모리가 약 12배 늘었다 → 활성값이 지배한다. 길이 1024에서 체크포인팅은 메모리를 −68%, 시간을 +31% 바꿨다.
-- 이 Mac에서 `sdpa`와 `eager`의 대리 메모리는 같았다. **MPS에는 FlashAttention 커널이 없다**†. Colab T4(CUDA)에서는 달랐다: 같은 설정(35M, 배치 4, 길이 1024)에서 최대 할당 메모리가 eager fp32 7.34 GB → sdpa fp32 2.58 GB, 체크포인팅까지 0.61 GB였다(`max_memory_allocated`라 MPS의 드라이버 대리 지표와 다른 지표; 모듈 06 README §8).
+- 서열 길이가 128에서 1024로 길어질 때 메모리는 약 12배 늘었다. 활성값이 지배한다. 길이 1024에서 체크포인팅은 메모리를 −68%, 시간을 +31% 바꿨다.
+- 이 Mac에서 `sdpa`와 `eager`의 대리 메모리는 같았다. **MPS에는 FlashAttention 커널이 없다**†. Colab T4(CUDA)에서는 달랐다. 같은 설정(35M, 배치 4, 길이 1024)에서 최대 할당 메모리가 eager fp32 7.34 GB, sdpa fp32 2.58 GB, 체크포인팅까지 적용하면 0.61 GB였다(`max_memory_allocated`라 MPS의 드라이버 대리 지표와 다른 지표다. 모듈 06 README §8).
 - bf16 autocast는 이 장비에서 시간 이득이 없었다 (+9~20%).
 
 ```python

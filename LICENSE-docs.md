@@ -21,8 +21,9 @@ time are not part of this repository. They keep their own licenses. How each
 license was checked, and which ones could not be confirmed, is described in
 `06_advanced_research/README.md`, section 7.
 
-Numbers transcribed from published papers (for example in
-`07_capstone/examples/dry_runs/track_E_traitgym_tables.py`, from a paper
-licensed CC BY-NC-ND) are cited facts with attribution. The licenses of this
-repository cover only its own text and code, not those sources. Whether this
-use of the transcribed values is permitted was not assessed.
+Values read from the tables and figures of published papers are not stored in
+this repository. The TraitGym dry run
+(`07_capstone/examples/dry_runs/track_E_traitgym_tables.py`) reads them from a
+local file that you fill in yourself, because that paper is licensed
+CC BY-NC-ND. Its record reports the comparison results only. The licenses of
+this repository cover only its own text and code.

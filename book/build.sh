@@ -23,10 +23,10 @@ SKIP_EXEC_LIST="02_protein/notebooks/04_esmfold_plddt_colab.ipynb 03_dna_genome/
 git ls-files '*.ipynb' | while read -r nb; do
   out="$B/$nb"; mkdir -p "$(dirname "$out")"
   runnable=1; for s in $SKIP_EXEC_LIST; do [ "$s" = "$nb" ] && runnable=0; done
-  # 원본이 실행본보다 새롭지만 코드 셀이 같으면(설명 셀만 고친 경우) 다시 실행하지 않고 설명 셀만 덮어쓴다
+  # 원본이 실행본보다 새롭지만 코드가 같으면(설명 셀이나 코드 셀의 주석만 고친 경우) 다시 실행하지 않고 설명 셀과 코드 셀 소스만 덮어쓴다
   if [ -f "$out.executed" ] && [ "$nb" -nt "$out.executed" ] \
      && "$ROOT/.venv/bin/python" "$ROOT/book/overlay_markdown.py" "$nb" "$out"; then
-    touch "$out.executed"; echo "[overlay] $nb: 코드 셀이 같아 설명 셀만 갱신"
+    touch "$out.executed"; echo "[overlay] $nb: 코드가 같아 설명 셀·주석만 갱신"
     continue
   fi
   if [ "${EXEC:-0}" = "1" ] && [ "$runnable" = "1" ] && { [ ! -f "$out.executed" ] || [ "$nb" -nt "$out.executed" ]; }; then

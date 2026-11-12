@@ -42,7 +42,10 @@ git ls-files '*.ipynb' | while read -r nb; do
   fi
 done
 
-# 3) 빌드
+# 2b) 실행 출력에 남은 로컬 절대경로를 지운다. 계정 이름이 HTML에 실리지 않게 하려는 처리다.
+"$ROOT/.venv/bin/python" "$ROOT/book/redact_paths.py" "$B" "$ROOT" "$HOME"
+
+# 3) 빌드. 하위 경로에 게시하려면 BASE_URL=/<저장소 이름> 을 붙인다 (book/pages.sh가 한다).
 cd "$B"
 # 이전 빌드의 site·html 출력이 쌓이면(해시 이름이 다른 첨부 사본이 누적됨) 콘텐츠 서버가 연결을 끊어
 # `fetch failed (ECONNRESET)`로 html이 0쪽이 되는 일이 있었다. 출력만 비우고 테마 캐시(templates/)는 둔다.

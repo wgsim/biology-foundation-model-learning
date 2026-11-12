@@ -85,3 +85,4 @@ site:
   template: book-theme
   options:
     folders: true   # 주소에 폴더 구조를 남긴다 (README·exercises가 모듈마다 있어 겹치므로)
+    hide_breadcrumbs: true   # BASE_URL로 하위 경로에 게시하면 홈 링크가 /저장소/저장소/ 로 이중이 되어 깨진다

@@ -28,6 +28,7 @@ checkpoints/
 # Web book (pilot)
 .venv-book/
 .book_build/
+.pages_site/
 
 # Local Claude Code settings
 .claude/

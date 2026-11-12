@@ -81,3 +81,14 @@ EXEC=1 bash book/build.sh      # Mac .venv로 실행 가능한 노트북 17개�
 - Colab·격리 환경 전용 노트북(02/04 ESMFold, 03/03 Enformer)은 실행하지 않고 출력 없이 싣는다.
 - `book/stage_fix_links.py`가 복사본에서 폴더 링크와 한글 제목 앵커를 책에 맞게 고친다(MyST는 제목 id에서 한글을 버린다).
 
+## 7. GitHub Pages에 게시 (선택)
+웹 책을 프로젝트 페이지(`https://<아이디>.github.io/<저장소 이름>/`)로 공개할 때 쓴다. 노트북 실행에 오래 걸려 GitHub Actions로는 빌드하지 않는다. 로컬에서 만든 HTML을 `gh-pages` 브랜치로 올린다.
+```bash
+bash book/pages.sh <저장소 이름>
+```
+- 하위 경로용으로 빌드하고(`BASE_URL=/<저장소 이름>`) 결과물을 검사한다. 로컬 경로, 계정 이름, 비밀값 패턴이 하나라도 나오면 중단한다. 통과하면 `.pages_site/`(git 제외)에 `.nojekyll`과 함께 모아 gh-pages 브랜치로 커밋한다.
+- 스크립트는 push하지 않는다. 마지막에 출력되는 `git -C .pages_site push --force …` 명령을 저장소를 만든 뒤 직접 실행하고, 저장소 Settings > Pages에서 Source를 `gh-pages` 브랜치로 고른다.
+- 노트북 출력에 남은 로컬 절대경로는 `book/redact_paths.py`가 `<repo>`와 `~`로 바꾼다. 이 처리는 `book/build.sh`에 들어 있어 일반 빌드에도 적용된다.
+- 로컬에서 볼 때는 `BASE_URL` 없이 §6의 명령으로 다시 빌드한다. 하위 경로로 빌드한 결과는 루트 주소(`http://localhost:8765`)에서 제대로 열리지 않는다.
+- 문서를 고치면 `bash book/pages.sh <저장소 이름>`을 다시 실행하고 같은 명령으로 push한다. `--force`라 gh-pages의 이전 기록은 남지 않는다.
+

@@ -20,3 +20,9 @@ Models, datasets and papers that the notebooks reference or download at run
 time are not part of this repository. They keep their own licenses. How each
 license was checked, and which ones could not be confirmed, is described in
 `06_advanced_research/README.md`, section 7.
+
+Numbers transcribed from published papers (for example in
+`07_capstone/examples/dry_runs/track_E_traitgym_tables.py`, from a paper
+licensed CC BY-NC-ND) are cited facts with attribution. The licenses of this
+repository cover only its own text and code, not those sources. Whether this
+use of the transcribed values is permitted was not assessed.

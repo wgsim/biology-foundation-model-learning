@@ -66,4 +66,4 @@ A self-study curriculum on biology foundation models (protein, DNA/genome, singl
 
 ## 라이선스
 - 코드는 MIT 라이선스(`LICENSE`), 문서는 CC BY 4.0(`LICENSE-docs.md`)이다.
-- 이 저장소에는 외부 모델 가중치와 데이터가 들어 있지 않다. 노트북이 실행 중에 내려받는 모델과 데이터는 각 출처의 라이선스를 따른다. 확인한 근거와 확인하지 못한 항목은 [06 강의노트](06_advanced_research/README.md)의 "데이터·모델 라이선스와 연구 책임성" 절에 있다.
+- 이 저장소에는 외부 모델 가중치와 데이터가 들어 있지 않다. 노트북이 실행 중에 내려받는 모델과 데이터, 논문에서 옮겨 적은 값은 각 출처의 라이선스를 따른다. 확인한 근거와 확인하지 못한 항목은 [06 강의노트](06_advanced_research/README.md)의 "데이터·모델 라이선스와 연구 책임성" 절에 있다.

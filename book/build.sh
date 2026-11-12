@@ -1,7 +1,7 @@
 #!/bin/bash
 # 웹 책(Jupyter Book 2 / MyST) 빌드. 저장소 원본은 건드리지 않고 .book_build/ 에 복사해 만든다.
-# 실행(저장소 루트): bash book/build.sh          # 문서만 복사해 빌드 (노트북은 이미 실행된 복사본이 있으면 그것을 씀)
-#                   EXEC=1 bash book/build.sh   # Mac .venv 로 실행 가능한 노트북을 실행해 출력을 싣는다 (원본이 바뀐 것만 다시 실행)
+# 실행(저장소 루트): bash book/build.sh          # 문서만 복사해 빌드 (노트북은 이미 실행된 복사본이 있으면 그것을 쓴다)
+#                   EXEC=1 bash book/build.sh   # Mac .venv 로 실행 가능한 노트북을 실행해 출력을 싣는다 (원본이 바뀐 것만 다시 실행한다)
 # 필요: .venv (노트북 실행), .venv-book (`uv venv --python 3.12 .venv-book && uv pip install --python .venv-book/bin/python jupyter-book`)
 # 첫 빌드는 사이트 테마(book-theme)를 GitHub에서 내려받는다.
 set -euo pipefail
@@ -15,7 +15,7 @@ git ls-files '*.md' '*.py' '*.txt' '*.sbatch' | while read -r f; do
   mkdir -p "$B/$(dirname "$f")"; cp "$f" "$B/$f"
 done
 cp book/myst.yml "$B/myst.yml"
-# 폴더를 가리키는 링크( ](00_orientation/) )는 책에서 그 폴더의 README로 보낸다 (복사본에서만 고침)
+# 폴더를 가리키는 링크( ](00_orientation/) )는 책에서 그 폴더의 README로 보낸다 (복사본에서만 고친다)
 "$ROOT/.venv/bin/python" "$ROOT/book/stage_fix_links.py" "$B"
 
 # 2) 노트북: 실행된 복사본이 없으면 원본(출력 없음)을 복사, EXEC=1이면 실행

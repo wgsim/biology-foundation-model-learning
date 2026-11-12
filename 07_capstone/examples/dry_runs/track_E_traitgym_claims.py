@@ -30,7 +30,7 @@ SEED = 0
 #  K4 "distal non-exonic은 Mendelian 양성의 약 10%": 양성 중 비율이 [0.095, 0.105]
 #  K5 "기준(무작위) AUPRC는 양성 비율 0.1": |338/3380 − 0.1| ≤ 0.001
 #  K6 "전체 풀링 AUPRC로 바꿔도 zero-shot 결과가 비슷하다(보충 그림 S7)": 가중 평균 순위와 풀링 순위의 Kendall τ ≥ 0.90
-#  (K5·K6은 이미 본 값의 확인이다: K5의 338/3,380은 L1에서, K6의 τ는 L3에서 이미 알고 있었다 — 사전 예측이 아니다)
+#  (K5·K6은 이미 본 값의 확인이다: K5의 338/3,380은 L1에서, K6의 τ는 L3에서 이미 알고 있었다. 사전 예측이 아니다)
 #  K7 (논문 B.4의 서술 vs 공개 코드) "zero-shot의 se는 양성·음성 집합 안에서 100회 부트스트랩": 그 방식으로 다시 계산한 se와 공개 CSV se의 비의 중앙값이 [0.85, 1.15]이면 '같은 방법으로 보임'
 TAU_MIN, K3_PROX, K3_NCRNA, K3_DISTAL = 0.90, 0.10, 0.10, 0.05
 ALIGN_BASED = ["CADD.plus.RawScore", "phyloP-241m.plus.score", "GPN-MSA_LLR.minus.score"]

@@ -1,7 +1,7 @@
 # 트랙 E 시험 실행: TraitGym(Benegas et al. 2025) 논문 재현 — L1(공개 지표 CSV의 숫자 재현) + L3(순위가 지표 정의·부분집합을 바꿔도 유지되는가)
 # 주장 단위(L1): `mendelian_traits_matched_9/AUPRC_by_chrom_weighted_average/{all, 일부 부분집합}/<모델>.csv`의 `score ± se`
 # 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/track_E_traitgym_reproduction.py`
-#   입력: 모듈 03이 받아 둔 TraitGym 점수 캐시 + `.cache/traitgym_published/`(공개 지표 CSV 22개, 합 2,058 B; 리비전 고정으로 승인 후 내려받음)
+#   입력: 모듈 03이 받아 둔 TraitGym 점수 캐시 + `.cache/traitgym_published/`(공개 지표 CSV 22개, 합 2,058 B. 리비전을 고정해 승인 후 내려받았다)
 import hashlib, importlib.metadata as md, json, subprocess, time, warnings
 from pathlib import Path
 
@@ -19,9 +19,9 @@ RUN_NAME = "dry_E_traitgym_l1_l3"
 REV = "1fde19555fe8c0a55b1382bdf4c6f7082209f566"          # 캐시와 공개 CSV가 모두 이 리비전이어야 한다
 DATASET = "mendelian_traits_matched_9"
 # L1: 공개 score와 재계산 score의 절대 차이 허용 오차. 계산이 결정적이므로 시드 변동이 없다(프로토콜 3의 시드 변동은 해당 없음).
-# 공개 se(0.005~0.10; 가장 작은 se도 EPS의 5배 이상)보다 작은 값으로, 반올림이나 라이브러리 버전 차이는 허용하고 정의의 차이는 잡도록 *결과를 보기 전에* 정했다.
+# 공개 se(0.005~0.10, 가장 작은 se도 EPS의 5배 이상)보다 작은 값으로, 반올림이나 라이브러리 버전 차이는 허용하고 정의의 차이는 잡도록 *결과를 보기 전에* 정했다.
 EPS = 1e-3
-SE_REL = 0.15                                              # se는 numpy로 재구현한 부트스트랩이라 polars 난수열과 같지 않다 → 통계적 일치만 본다(판정에 쓰지 않음)
+SE_REL = 0.15                                              # se는 numpy로 재구현한 부트스트랩이라 polars 난수열과 같지 않으므로 통계적 일치만 본다(판정에 쓰지 않음)
 BOOT_SE = 1000                                             # 공개 코드의 bootstrap_se와 같은 횟수
 SUBSETS = ["3_prime_UTR_variant", "5_prime_UTR_variant", "non_coding_transcript_exon_variant", "nonexonic_AND_distal", "nonexonic_AND_proximal"]
 SUBSET_MODEL = "GPN_final_LLR.minus.score"                  # 공개 부분집합 CSV를 내려받은 모델 (캐시에 점수가 있다)
@@ -93,7 +93,7 @@ S = {m: load_score(m) for m in ALL_MODELS}
 # ---------- 3. 지표: 공개 workflow의 정의를 옮긴 것 ----------
 def by_chrom_table(yy, ss, cc):
     """rule get_metric_by_block: 염색체마다 (n, AUPRC). 공개 코드는 V[chrom].unique() 전체를 쓰고 양성 없는 염색체를 따로 처리하지 않는다.
-    이 경우 sklearn(1.9.1에서 확인)은 경고와 함께 AP = 0.0을 돌려주고 그 염색체도 n으로 가중되어 평균에 들어간다 — 부분집합(교집합)에서 일어날 수 있어 그대로 따른다."""
+    이 경우 sklearn(1.9.1에서 확인)은 경고와 함께 AP = 0.0을 돌려주고 그 염색체도 n으로 가중되어 평균에 들어간다. 부분집합(교집합)에서 일어날 수 있어 그대로 따른다."""
     rows = []
     for c in pd.unique(cc):
         m = cc == c

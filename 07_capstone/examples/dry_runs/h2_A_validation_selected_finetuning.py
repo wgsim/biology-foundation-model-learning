@@ -1,6 +1,6 @@
 # 트랙 A 질문의 다른 절반 (모듈 06 과제 2): "검증 기반 선택(조기 종료·학습률)을 하면 probe vs 파인튜닝의 순위가 바뀌는가?" — 템플릿 구조로
 # 모듈 06/01의 설정(ESM-2 8M, assay 3종, position-block 분할, 시드 0~2) 위에서 (고정 설정) vs (중첩 검증으로 학습률·에폭 선택)을 같은 시드에서 짝지어 비교한다.
-# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_A_validation_selected_finetuning.py` (캐시만 사용, 다운로드 없음; 약 1시간)
+# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_A_validation_selected_finetuning.py` (캐시만 사용, 다운로드 없음, 약 1시간)
 import gc, hashlib, importlib.metadata as md, json, subprocess, time, warnings, zipfile
 from pathlib import Path
 
@@ -223,7 +223,7 @@ for a in ASSAYS:
             # (a) 고정 설정: 노트북 06/01과 같은 5에폭·기본 LR, 마지막 에폭의 test
             hist, secs = train_eval(mode, a, tr, {"test": te}, seed, FIXED["epochs"], lr_of(mode))
             out_rows.append(dict(base, method=f"{mode}-fixed", rho=hist["test"][-1], seconds=secs))
-            # (b) 선택 설정 — 주의: 8에폭 스케줄에서 e*에서 멈추므로 LR이 0까지 감쇠하지 않아 고정(5에폭 스케줄)과 스케줄이 다르다(선택 효과와 스케줄 효과가 섞여 있다). 학습률 3개 × 최대 E_MAX 에폭을 안쪽 train에서 돌려 검증 Spearman이 최대인 (lr, 에폭)을 고른 뒤 바깥 train 전체로 그 에폭까지 학습
+            # (b) 선택 설정. 주의: 8에폭 스케줄에서 e*에서 멈추므로 LR이 0까지 감쇠하지 않아 고정(5에폭 스케줄)과 스케줄이 다르다. 선택 효과와 스케줄 효과가 섞여 있다. 학습률 3개 × 최대 E_MAX 에폭을 안쪽 train에서 돌려 검증 Spearman이 최대인 (lr, 에폭)을 고른 뒤 바깥 train 전체로 그 에폭까지 학습한다
             t_sel = time.time()
             best = (-9.0, None, None)
             curves = {}

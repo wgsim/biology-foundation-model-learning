@@ -2,7 +2,7 @@
 # C③(h2_C_geneformer_finetune.py, V1-10M, Mac)과 같은 데이터·분할·하이퍼파라미터·결정 규칙이고 모델만 V2-104M으로 바꿨다. Mac에서는 약 17분/에폭이라 Colab GPU에서 학습한다.
 # 단계(H2_STAGE): check  = (Mac) 토큰화 점검 — 4,096토큰 동결 <cls> 임베딩이 모듈 04/01 캐시와 같은지
 #                bench  = (Mac·Colab) fold 하나의 앞 N 스텝으로 스텝당 시간·메모리·손실 측정 (fp32, CUDA면 fp16도)
-#                train  = (Colab) 512토큰 동결 임베딩 저장 + 20개 fold 미세조정; fold마다 결과를 저장하고 H2_DRIVE_DIR로 복사(재개 가능)
+#                train  = (Colab) 512토큰 동결 임베딩 저장 + 20개 fold 미세조정. fold마다 결과를 저장하고 H2_DRIVE_DIR로 복사한다(재개 가능)
 #                report = (Mac) 저장된 fold 결과 + PCA·동결 baseline으로 보고서
 # 환경변수: H2_DATA(pbmc_sub.h5ad가 있는 폴더, 기본 .cache/singlecell), H2_OUT(결과 폴더, 기본 .cache/capstone_runs/<RUN_NAME>), H2_DRIVE_DIR(선택), H2_AMP=1(fp16 autocast, CUDA 전용), H2_BENCH_STEPS
 # 실행(Mac): 저장소 루트에서 `H2_STAGE=report HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_C_geneformer_v2_finetune.py`
@@ -364,7 +364,7 @@ sc.pp.log1p(a)
 b = a[:, hvg].copy()
 sc.pp.scale(b, max_value=10)
 sc.pp.pca(b, n_comps=50, random_state=SEED)
-Z_PCA = b.obsm["X_pca"].copy()                                           # 주 PCA: 모든 기증자의 세포로 적합(transductive) — 엄격 fold별 적합은 민감도
+Z_PCA = b.obsm["X_pca"].copy()                                           # 주 PCA: 모든 기증자의 세포로 적합한다(transductive). 엄격한 fold별 적합은 민감도로 따로 낸다
 
 
 def l2(Z):

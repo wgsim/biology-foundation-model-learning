@@ -96,7 +96,7 @@ sc.pp.log1p(a)
 b = a[:, hvg].copy()
 sc.pp.scale(b, max_value=10)
 sc.pp.pca(b, n_comps=50, random_state=SEED)
-Z_PCA = b.obsm["X_pca"].copy()                       # 모듈 04/02와 같은 방식: HVG·스케일·PCA를 모든 세포로 비지도 적합(transductive; PCA에 유리한 설정)
+Z_PCA = b.obsm["X_pca"].copy()                       # 모듈 04/02와 같은 방식: HVG·스케일·PCA를 모든 세포로 비지도 적합(transductive, PCA에 유리한 설정)
 
 
 def l2(Z):
@@ -104,7 +104,7 @@ def l2(Z):
 
 
 def split_static(Z, te):
-    """훈련 기증자 평균으로 중심화 → 행 L2 정규화 (노트북 04/02의 fold_prep)"""
+    """훈련 기증자 평균으로 중심화한 뒤 행 L2 정규화한다 (노트북 04/02의 fold_prep)"""
     mu = Z[~te].mean(0)
     return l2(Z[~te] - mu), l2(Z[te] - mu)
 

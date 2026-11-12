@@ -14,7 +14,7 @@ T0 = time.time()
 # ---------- 0. 사전 등록 (결과를 보기 전에) ----------
 RUN_NAME = "dry_B_traitgym_llr_vs_conservation"
 DATASET = "mendelian_traits_matched_9"
-# (파일, 열, 부호) — 부호는 데이터를 보기 전에 정한다: LLR은 −, 보존 점수는 +
+# (파일, 열, 부호). 부호는 데이터를 보기 전에 정한다: LLR은 −, 보존 점수는 +
 SCORES = {
     "NT LLR": ("NucleotideTransformer_LLR", "score", -1),
     "Evo2-7B LLR": ("evo2_7b_LLR", "score", -1),
@@ -154,14 +154,14 @@ for tag, cmp_ in [("PRIMARY", PRIMARY), ("SECONDARY", SECONDARY)]:
     RESULT[tag] = dict(decision=dec, mean_delta_chrom=mean_d, wins=wins, n_chrom=len(d_ch), pooled_delta=pooled, ci=ci.round(3).tolist())
     print(f"{tag}: {cmp_['model']} vs {cmp_['baseline']} | 풀링 Δ {pooled:+.3f} 95%[{ci[0]:+.3f},{ci[1]:+.3f}] | 염색체 평균 Δ {mean_d:+.3f}, Δ>0 {wins}/{len(d_ch)} → {dec}")
 
-# 음성 대조: 모델 점수를 match_group 안에서 섞는다 → 풀링 Δ가 (귀무 평균 − baseline)에 가깝고, 모델 AUPRC는 귀무 근처여야 한다
+# 음성 대조: 모델 점수를 match_group 안에서 섞는다. 이때 풀링 Δ가 (귀무 평균 − baseline)에 가까워야 하고, 모델 AUPRC는 귀무 근처여야 한다
 rs = np.random.RandomState(1)
 gi = [np.where(groups == k)[0] for k in np.unique(groups)]
 shuf = np.empty(len(y))
 for idx in gi:
     shuf[idx] = rs.permutation(S[PRIMARY["model"]][idx])
 print(f"\n음성 대조(모델 점수를 그룹 내 섞기): AUPRC {auprc(allm, shuf):.3f} (귀무 평균 {null.mean():.3f}) | 염색체 평균 Δ vs {PRIMARY['baseline']}: {np.mean(chrom_delta(PRIMARY['model'], PRIMARY['baseline'], shuf)):+.3f}")
-# 양성 대조: 결정 규칙이 '지지'를 낼 수 있는지 — Evo2-7B LLR(AUPRC 0.38)은 TSS 거리만(≈ 귀무) 점수보다 훨씬 높으므로 '지지'여야 한다
+# 양성 대조: 결정 규칙이 '지지'를 낼 수 있는지 확인한다. Evo2-7B LLR(AUPRC 0.38)은 TSS 거리만(≈ 귀무) 점수보다 훨씬 높으므로 '지지'여야 한다
 d_pos = chrom_delta("Evo2-7B LLR", "TSS 거리만")
 ci_pos = boot_delta("Evo2-7B LLR", "TSS 거리만")
 dec_pos, mean_pos, wins_pos = decide(d_pos, tuple(ci_pos))

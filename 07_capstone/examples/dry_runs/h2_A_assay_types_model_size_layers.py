@@ -1,5 +1,5 @@
 # 트랙 A 질문의 다른 절반: (②) 다른 assay 유형(활성·발현·결합·적합도·안정성)에서도 probe가 위치 baseline을 이기는가?
-# (③) 모델 크기(ESM-2 8M/35M/150M/650M)와 층 선택은 그 결과를 얼마나 바꾸는가?  — 템플릿 노트북의 절차를 여러 assay로 옮긴 것
+# (③) 모델 크기(ESM-2 8M/35M/150M/650M)와 층 선택은 그 결과를 얼마나 바꾸는가? 템플릿 노트북의 절차를 여러 assay로 옮겼다.
 # 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_A_assay_types_model_size_layers.py` (캐시만 사용, 다운로드 없음)
 import hashlib, importlib.metadata as md, json, subprocess, time, warnings, zipfile
 from pathlib import Path
@@ -291,7 +291,7 @@ for a in SUB5:
                 RES3.append(dict(assay=a, seed=seed, model=mk, layer=l, sel="fixed", rho=rho(Y[te], fits[l][0])))
             bl = max(lays, key=lambda l: fits[l][1])                               # train 안의 그룹 CV로 층 선택
             RES3.append(dict(assay=a, seed=seed, model=mk, layer=bl, sel="cv-selected", rho=rho(Y[te], fits[bl][0])))
-            orc = max(lays, key=lambda l: rho(Y[te], fits[l][0]))                  # 진단용 오라클: test를 보고 고른 층(선택에 쓰면 안 됨)
+            orc = max(lays, key=lambda l: rho(Y[te], fits[l][0]))                  # 진단용 오라클: test를 보고 고른 층(선택에 쓰면 안 된다)
             RES3.append(dict(assay=a, seed=seed, model=mk, layer=orc, sel="oracle", rho=rho(Y[te], fits[orc][0])))
     print(f"  {a[:40]} ({time.time() - t:.0f}s)", flush=True)
 R3 = pd.DataFrame(RES3)

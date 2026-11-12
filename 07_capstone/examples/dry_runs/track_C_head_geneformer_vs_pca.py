@@ -20,7 +20,7 @@ SC = ROOT / ".cache" / "singlecell"
 
 # ---------- 0. 사전 등록 ----------
 RUN_NAME = "dry_C_head_geneformer_vs_pca"
-C_LR = 1.0                     # 로지스틱 회귀 규제(고정; test로 고르지 않는다)
+C_LR = 1.0                     # 로지스틱 회귀 규제(고정, test로 고르지 않는다)
 PRIMARY = dict(model="V2 cls L-2", baseline="PCA(HVG,50)", labels="coarse", head="logreg")
 MIN_EFFECT, MIN_WINS, BOOT = 0.02, 9, 1000      # 기증자 13명 중 Δ>0인 기증자 ≥ 9
 SEED = 0
@@ -95,7 +95,7 @@ LOGHVG = np.asarray(a[:, hvg].X.todense() if hasattr(a.X, "todense") else a[:, h
 b = a[:, hvg].copy()
 sc.pp.scale(b, max_value=10)
 sc.pp.pca(b, n_comps=50, random_state=SEED)
-Z_PCA = b.obsm["X_pca"].copy()                       # 노트북 04/02와 같은 방식. 주 비교의 PCA 기준: HVG 선택·스케일·PCA를 *모든* 세포(held-out 기증자 포함)로 비지도 적합(transductive, 라벨은 쓰지 않음) → PCA에 유리한 쪽의 설정. fold별 적합은 민감도에서 따로 본다
+Z_PCA = b.obsm["X_pca"].copy()                       # 노트북 04/02와 같은 방식. 주 비교의 PCA 기준: HVG 선택·스케일·PCA를 *모든* 세포(held-out 기증자 포함)로 비지도 적합한다(transductive, 라벨은 쓰지 않음). 이는 PCA에 유리한 쪽의 설정이다. fold별 적합은 민감도에서 따로 본다
 print(f"HVG {int(hvg.sum())} | PCA {Z_PCA.shape} | 준비 {time.time() - T0:.0f}s")
 
 
@@ -106,7 +106,7 @@ def fold_pca(te):
     f = lambda M: np.clip((M - mu) / sd, -10, 10)
     p = PCA(n_components=50, random_state=SEED, svd_solver="randomized").fit(f(LOGHVG[tr]))
     Ztr, Zte = p.transform(f(LOGHVG[tr])), p.transform(f(LOGHVG[te]))
-    mu_ = Ztr.mean(0)                                           # 주 비교(split_static)와 같은 후처리: 훈련 평균 중심화 → 행 L2 정규화
+    mu_ = Ztr.mean(0)                                           # 주 비교(split_static)와 같은 후처리: 훈련 평균으로 중심화한 뒤 행 L2 정규화한다
     return l2(Ztr - mu_), l2(Zte - mu_)
 
 
@@ -115,7 +115,7 @@ def l2(Z):
 
 
 def split_static(Z, te):
-    """훈련 기증자 평균으로 중심화 → 행 L2 정규화 (노트북 04/02의 fold_prep)"""
+    """훈련 기증자 평균으로 중심화한 뒤 행 L2 정규화한다 (노트북 04/02의 fold_prep)"""
     mu = Z[~te].mean(0)
     return l2(Z[~te] - mu), l2(Z[te] - mu)
 

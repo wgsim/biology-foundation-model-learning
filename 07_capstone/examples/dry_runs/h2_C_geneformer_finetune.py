@@ -1,6 +1,6 @@
 # 트랙 C 질문의 다른 절반 (C③): "Geneformer를 *미세조정*하면 동결 임베딩 위 head나 PCA head보다 기증자 단위로 나은가?"
-# 모델: Geneformer V1-10M (Mac MPS에서 현실적인 유일한 크기; V2-104M은 512토큰에서 약 17분/에폭(9,000세포)이라 13-fold LODO는 약 7시간 → 하지 않음)
-# 데이터: 모듈 04의 Wilk 2020 PBMC 하위표본(캐시), 기증자 13명 leave-one-donor-out, 거친 라벨 13종 — 트랙 C MVP·동결 임베딩 결과와 같은 분할
+# 모델: Geneformer V1-10M (Mac MPS에서 현실적인 유일한 크기다. V2-104M은 512토큰에서 약 17분/에폭(9,000세포)이라 13-fold LODO는 약 7시간이 걸려 하지 않았다)
+# 데이터: 모듈 04의 Wilk 2020 PBMC 하위표본(캐시), 기증자 13명 leave-one-donor-out, 거친 라벨 13종. 분할은 트랙 C MVP·동결 임베딩 결과와 같다
 # 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_C_geneformer_finetune.py` (캐시만 사용, 약 2시간)
 import hashlib, importlib.metadata as md, json, pickle, subprocess, time, warnings
 from pathlib import Path
@@ -34,8 +34,8 @@ MAX_LEN = 512                           # 미세조정 입력 길이(상위 순�
 EPOCHS, BS, LR_BACKBONE, LR_HEAD, WD, WARM = 2, 32, 5e-5, 1e-3, 0.01, 0.1       # 고정 설정; 튜닝하지 않았다(검증 기반 선택 없음)
 PRIMARY = dict(model="V1-10M 미세조정(512토큰)", baselines=["PCA(HVG,50)+logreg", "V1 동결(512토큰)+logreg"], unit="donor(13)")
 MIN_EFFECT, MIN_WINS, BOOT = 0.02, 9, 1000       # 트랙 C MVP와 같은 규칙: 기증자별 균형정확도 Δ 평균 ≥ 0.02, Δ>0 ≥ 9/13, 풀링 macro-F1 Δ 구간 하한 > 0
-CTRL_DONORS_RAND = 5                    # 무작위 초기화 미세조정(양성 대조)은 비용 때문에 앞의 5개 기증자 fold만
-CTRL_DONORS_SHUF = 2                    # 훈련 라벨을 섞은 미세조정(음성 대조)은 2개 fold만
+CTRL_DONORS_RAND = 5                    # 무작위 초기화 미세조정(양성 대조)은 비용 때문에 앞의 5개 기증자 fold만 돌린다
+CTRL_DONORS_SHUF = 2                    # 훈련 라벨을 섞은 미세조정(음성 대조)은 2개 fold만 돌린다
 C_LR, SEED = 1.0, 0
 REV = "1f7fbae4e469a5f4f1af8c111a529cfe1b3829f5"
 REPO = "ctheodoris/Geneformer"
@@ -61,7 +61,7 @@ def sha256(path, chunk=1 << 22):
 
 OUT = ROOT / ".cache" / "capstone_runs" / RUN_NAME
 OUT.mkdir(parents=True, exist_ok=True)
-# 재개용 캐시는 설정·데이터 지문(KEY)이 붙은 디렉터리에 둔다 — 하이퍼파라미터·토큰 길이·모델 리비전·데이터가 바뀌면 다른 디렉터리가 되어 옛 fold 결과가 섞이지 않는다
+# 재개용 캐시는 설정·데이터 지문(KEY)이 붙은 디렉터리에 둔다. 하이퍼파라미터·토큰 길이·모델 리비전·데이터가 바뀌면 다른 디렉터리가 되어 옛 fold 결과가 섞이지 않는다
 CONFIG = dict(max_len=MAX_LEN, epochs=EPOCHS, bs=BS, lr_backbone=LR_BACKBONE, lr_head=LR_HEAD, wd=WD, warmup=WARM, seed=SEED, rev=REV, ctrl=[CTRL_DONORS_RAND, CTRL_DONORS_SHUF],
               torch=torch.__version__, transformers=md.version("transformers"))
 DATA_SHA = {f: sha256(SC / f) for f in ["pbmc_sub.h5ad", "geneformer_embeddings.npz"]}
@@ -125,7 +125,7 @@ for i in range(Xn.shape[0]):
     TOK.append(t[:MAX_LEN])
 L = np.array([len(t) for t in TOK_FULL])
 print(f"토큰화: 길이 중앙값 {np.median(L):.0f}, 2,048에서 잘린 세포 {np.mean(L >= 2048):.2f}, {MAX_LEN}토큰으로 자른 세포 {np.mean(L > MAX_LEN):.2f}")
-# 점검: 캐시된 동결 임베딩과 같은 어휘·같은 순서로 토큰화했는지 — 동결 V1 임베딩을 새로 계산해 캐시(2,048토큰)와 비교
+# 점검: 캐시된 동결 임베딩과 같은 어휘·같은 순서로 토큰화했는지 확인하려고, 동결 V1 임베딩을 새로 계산해 캐시(2,048토큰)와 비교한다
 cfg_dir = Path(fetch(V1["model"] + "/config.json")).parent
 fetch(V1["model"] + "/model.safetensors")
 

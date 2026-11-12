@@ -1,6 +1,6 @@
 # 트랙 C 질문의 다른 절반 (C②): "새 데이터셋에서도 Geneformer V2 임베딩 위의 지도 head가 PCA head보다 기증자 단위로 나은가?"
 # 새 데이터셋(승인 후 내려받음): CELLxGENE "Cross-sectional" — HIV 공동감염 내장리슈마니아증 연구(Commun Biol 2024; doi 10.1038/s42003-024-06225-2), PBMC 17,308세포, 기증자 10명, 5' 10x
-# 파이프라인: 모듈 04/01의 rank value encoding·임베딩 추출을 그대로 옮겨(노트북 함수는 import할 수 없어 복사) 새 데이터에 적용 → 트랙 C MVP(logreg head vs PCA, LODO) 재현
+# 파이프라인: 모듈 04/01의 rank value encoding·임베딩 추출을 그대로 옮겨(노트북 함수는 import할 수 없어 복사) 새 데이터에 적용해 트랙 C MVP(logreg head vs PCA, LODO)를 재현한다
 # 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_C_new_dataset_geneformer.py` (약 25~40분, Mac MPS)
 import hashlib, importlib.metadata as md, io, json, pickle, subprocess, time, warnings
 from pathlib import Path
@@ -31,7 +31,7 @@ DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 RUN_NAME = "h2_C_new_dataset_geneformer"
 H5AD = SC / "cxg_cross_sectional.h5ad"
 H5AD_SHA256 = "98a84e43ce2f531209bfdf5e640151c6fa27c676ccdec3b349cdeb4b0a7ce188"
-CAP = 1000                         # 기증자당 최대 세포 수 (Wilk는 800; 이 데이터는 기증자 10명이고 773~3,711세포)
+CAP = 1000                         # 기증자당 최대 세포 수 (Wilk는 800, 이 데이터는 기증자 10명이고 773~3,711세포)
 MIN_CLASS_CELLS = 100              # 하위표본에서 이 수 미만인 세포 유형은 평가에서 뺀다 (LODO에서 기증자 10명에게 나뉘면 평가가 불가능한 크기)
 PRIMARY = dict(model="V2 cls L-2", baseline="PCA(HVG,50)", head="logreg", labels="cell_type(작은 유형 제외)", unit="donor")
 MIN_EFFECT, BOOT = 0.02, 1000      # 기증자별 균형정확도 Δ의 평균 ≥ 0.02, 풀링 macro-F1 Δ의 기증자 부트스트랩 구간 하한 > 0
@@ -116,7 +116,7 @@ y_all = np.array([cls.index(v) for v in obs.cell_type])
 print(f"평가 세포 {len(obs)} | 기증자 {len(dn)}명({', '.join(f'{d}:{(donors == d).sum()}' for d in dn)}) | 세포 유형 {len(cls)}종 | 비-primary 세포 비율 {1 - obs.is_primary.astype(bool).mean():.2f}")
 
 # ---------- 3. Rank value encoding (노트북 04/01 §3과 같은 구현) ----------
-# Geneformer의 유전자 사전은 pickle(.pkl)이다. 모듈 04/01과 같이 *허용 목록 unpickler*로만 읽는다: numpy dtype·scalar 외의 전역 객체는 차단한다. 파일은 고정한 저장소 리비전에서 받은 것이다(근사 방어; 신뢰할 수 없는 pickle에는 쓰지 말 것).
+# Geneformer의 유전자 사전은 pickle(.pkl)이다. 모듈 04/01과 같이 *허용 목록 unpickler*로만 읽는다: numpy dtype·scalar 외의 전역 객체는 차단한다. 파일은 고정한 저장소 리비전에서 받은 것이다(근사 방어이므로 신뢰할 수 없는 pickle에는 쓰지 말아야 한다).
 class SafeUnpickler(pickle.Unpickler):
     ALLOWED = {("numpy", "dtype"), ("numpy.core.multiarray", "scalar"), ("numpy._core.multiarray", "scalar")}
 

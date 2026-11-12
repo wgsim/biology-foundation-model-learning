@@ -1,6 +1,6 @@
 # 트랙 B 질문의 다른 절반: "NT probe의 이득이 층 선택·6-mer baseline 크기(k·학습 크기)에 얼마나 의존하는가?" — 템플릿 구조로
 # 모듈 03/01의 프로모터 분류(promoter_tata, promoter_no_tata)에서 NT-500M 평균 임베딩(층 0~24, 2층 간격) + 로지스틱 probe vs k-mer 빈도 baseline.
-# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_B_nt_layer_kmer_dependence.py` (캐시만 사용, 다운로드 없음; 임베딩은 .cache/capstone_runs/ 아래에 저장)
+# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_B_nt_layer_kmer_dependence.py` (캐시만 사용, 다운로드 없음. 임베딩은 .cache/capstone_runs/ 아래에 저장한다)
 import hashlib, importlib.metadata as md, json, subprocess, time, warnings
 from pathlib import Path
 

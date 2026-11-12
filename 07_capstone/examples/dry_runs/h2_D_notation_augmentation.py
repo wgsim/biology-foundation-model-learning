@@ -28,7 +28,7 @@ MODEL = ("DeepChem/ChemBERTa-77M-MLM", "ed8a5374f2024ec8da53760af91a33fb8f6a15ff
 KS = [1, 5, 20]                                 # 증강 개수 K
 N_TTA = 5                                       # 추론 때 무작위 표기를 평균하는 개수(보조 조건)
 REPEATS, K_FOLD, K_INNER = 3, 5, 3              # 바깥 scaffold 분할 반복 3 × 5-fold, 안쪽 alpha 선택은 분자(scaffold) 단위 3-fold
-ALPHAS = np.logspace(-2, 6, 17)                 # 증강하면 행 수가 K배라 최적 alpha도 커진다 → 노트북(1e5까지)보다 넓게
+ALPHAS = np.logspace(-2, 6, 17)                 # 증강하면 행 수가 K배라 최적 alpha도 커지므로 노트북(1e5까지)보다 넓게 잡는다
 PRIMARY = dict(variant="rows5", baseline="canon", test="rand1")   # 증강(행 K=5)을 학습한 head vs 정규화만 학습한 head, test는 분자당 무작위 표기 1개
 MIN_EFFECT, MIN_WINS, BOOT = 0.10, 3, 300       # 반복 3회 중 3회 모두 개선 + 평균 RMSE 개선 ≥ 0.10 + 군집 부트스트랩 구간 하한 > 0
 SOLVED_TOL = 0.05                               # '해결됨': 증강 head의 무작위 표기 RMSE − 정규화 head의 정규화 RMSE ≤ 0.05
@@ -231,7 +231,7 @@ for name, (build, scale) in VARIANTS.items():
                 Xt = X_ECFP[te] if name == "ecfp4" else TEST_COND[cn](te)
                 OOF[(name, cn)][r, te] = path_predict(m, Xt, a)
     print(f"  {name:7s} 완료 (누적 {time.time() - t:.0f}s) | 선택된 alpha 중앙값 {np.median(ALPHA_CHOSEN[name]):.3g}", flush=True)
-# 음성 대조: 훈련 라벨만 섞어 (정규화로) 학습 → 정규화 test
+# 음성 대조: 훈련 라벨만 섞어 (정규화로) 학습한 뒤 정규화 test에서 평가한다
 OOF[("canon-shuffled", "canon")] = np.zeros((REPEATS, N))
 for r, folds in enumerate(FOLDS):
     for fi, (tr, te) in enumerate(folds):

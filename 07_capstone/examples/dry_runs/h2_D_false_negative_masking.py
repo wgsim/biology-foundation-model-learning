@@ -106,7 +106,7 @@ assert all(len(set(GROUP[tr]) & set(GROUP[te])) == 0 for tr, te in FOLDS), "Pfam
 
 
 def false_negative_stats(idx, bs=BS, n_batches=200, seed=0):
-    """학습 배치 안의 비대각 쌍 중 같은 그룹 / 같은 텍스트인 쌍의 비율 (무작위 배치 기준) — 거짓 음성이 얼마나 되는가."""
+    """학습 배치 안의 비대각 쌍 중 같은 그룹 / 같은 텍스트인 쌍의 비율이다 (무작위 배치 기준). 거짓 음성이 얼마나 되는지 잰다."""
     rng = np.random.default_rng(seed)
     g_frac, t_frac = [], []
     for _ in range(n_batches):
@@ -136,7 +136,7 @@ class Head(nn.Module):
 def info_nce(a, b, logit_scale, ignore=None):
     logits = logit_scale.exp().clamp(max=100) * a @ b.T
     if ignore is not None:
-        logits = logits.masked_fill(ignore, -1e4)              # 대각은 ignore가 아니다 → 정답 쌍은 항상 남는다
+        logits = logits.masked_fill(ignore, -1e4)              # 대각은 ignore가 아니므로 정답 쌍은 항상 남는다
     y = torch.arange(len(a))
     return (F.cross_entropy(logits, y) + F.cross_entropy(logits.T, y)) / 2
 

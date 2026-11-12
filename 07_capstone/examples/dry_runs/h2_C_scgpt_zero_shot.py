@@ -3,10 +3,10 @@
 # scGPT: 소스 26개 .py(GitHub bowang-lab/scGPT 커밋 cebd6fae…, MIT)를 `.cache/scgpt_src/`에 두고 *설치 없이* sys.path로 불러 쓴다. 체크포인트 whole-human(Google Drive, 약 207 MB)은 weights_only=True로만 읽는다.
 # 임베딩: 공식 `tasks/cell_emb.py`의 입력 구성(<cls> + 0이 아닌 유전자, 값은 세포 안에서 51구간 binning, 1200 초과 시 무작위 표본, <cls> 위치의 마지막 층 출력)을 옮긴 자체 루프다.
 #   공식 `embed_data`는 CUDA·os.sched_getaffinity(리눅스 전용)를 가정해 그대로 부를 수 없다. 공식과 다른 점: 공식은 반환 직전에 행별 L2 정규화를 하지만 여기서는 모든 특징에 공통인 파이프라인
-#   (훈련 fold 평균 센터링 → L2)을 쓴다 — 공식 순서(L2 → 센터링)는 민감도 비교로 따로 낸다. 입력은 공식 함수처럼 adata.X(원 카운트)를 그대로 넣는다.
+#   (훈련 fold 평균 센터링 → L2)을 쓴다. 공식 순서(L2 → 센터링)는 민감도 비교로 따로 낸다. 입력은 공식 함수처럼 adata.X(원 카운트)를 그대로 넣는다.
 # 체크포인트 args.json: no_cls=true, no_cce=true, MVC=true로 기록(이 플래그가 실제 사전학습에서 어떻게 쓰였는지는 확인하지 못했다). cell_emb_style은 기록되어 있지 않아 `<cls>` 위치가 사전학습에서 세포 임베딩으로 쓰였는지는
-#   확인하지 못했다 → `<cls>`와 유전자 위치 평균 풀링을 둘 다 낸다.
-# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_C_scgpt_zero_shot.py` (캐시만 사용; H2_SMOKE=1이면 128세포 시간 측정만)
+#   확인하지 못했다. 그래서 `<cls>`와 유전자 위치 평균 풀링을 둘 다 낸다.
+# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_C_scgpt_zero_shot.py` (캐시만 사용. H2_SMOKE=1이면 128세포 시간 측정만 한다)
 import hashlib, importlib.metadata as md, json, os, re, subprocess, sys, time, warnings
 from pathlib import Path
 
@@ -31,7 +31,7 @@ CKPT = ROOT / ".cache" / "scgpt_ckpt" / "whole-human"
 OUT = ROOT / ".cache" / "capstone_runs" / "h2_C_scgpt_zero_shot"
 OUT.mkdir(parents=True, exist_ok=True)
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-torch.backends.mha.set_fastpath_enabled(False)   # eval 모드의 nested-tensor 빠른 경로(aten::_nested_tensor_from_mask_left_aligned)가 MPS에 없다 — 같은 수식의 일반 경로를 쓴다
+torch.backends.mha.set_fastpath_enabled(False)   # eval 모드의 nested-tensor 빠른 경로(aten::_nested_tensor_from_mask_left_aligned)가 MPS에 없어서 같은 수식의 일반 경로를 쓴다
 SMOKE = os.environ.get("H2_SMOKE") == "1"
 
 # ---------- 0. 사전 등록 (작성자는 같은 데이터에서 Geneformer V2 < PCA, V1 < V2의 결과를 이미 보았다; scGPT 결과는 보기 전에 정했다) ----------
@@ -135,7 +135,7 @@ def build_model(pretrained):
         print(f"체크포인트 텐서 {len(state)}개 | 모델 파라미터 {len(md_)}개 중 이름·모양이 맞는 것 {len(matched)}개")
         print("  체크포인트에 없는(=무작위 초기값으로 남는) 모델 파라미터:", missing)
         print("  모델에 대응이 없는 체크포인트 텐서:", unused)
-        # 임베딩 경로(encoder·value_encoder·transformer_encoder 등)는 전부 체크포인트에서 와야 한다. 허용하는 누락은 분류 head(cls_decoder; 임베딩에 쓰지 않음)뿐이다.
+        # 임베딩 경로(encoder·value_encoder·transformer_encoder 등)는 전부 체크포인트에서 와야 한다. 허용하는 누락은 분류 head(cls_decoder, 임베딩에 쓰지 않음)뿐이다.
         assert len(matched) > 0 and all(k.startswith("cls_decoder.") for k in missing), f"임베딩 경로 파라미터가 체크포인트에서 오지 않았다: {missing}"
         assert set(unused) <= {"flag_encoder.weight"}, f"예상 밖의 미사용 체크포인트 텐서: {unused}"
         load_pretrained(m, state, strict=False, verbose=False)

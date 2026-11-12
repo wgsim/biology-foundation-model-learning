@@ -1,6 +1,6 @@
 # 트랙 D 질문의 다른 절반 (모듈 05 과제 3): "노트북 05/01의 비교(동결 ChemBERTa-MLM vs ECFP4, 분할 3종)가 다른 MoleculeNet 과제에서도 같은 방향인가?" — 템플릿 구조로
 # 새 과제 3개(승인 후 내려받음): FreeSolv(SAMPL.csv, 회귀), BACE(bace.csv, 이진 분류 Class), ClinTox(clintox.csv.gz, 이진 분류 CT_TOX). 파이프라인은 노트북 05/01과 같다.
-# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_D_new_moleculenet_tasks.py` (캐시만 사용; CSV 3개는 .cache/molecules/에 이미 내려받아 둠)
+# 실행: 저장소 루트에서 `HF_HOME=$PWD/.cache/hf HF_HUB_OFFLINE=1 .venv/bin/python -I 07_capstone/examples/dry_runs/h2_D_new_moleculenet_tasks.py` (캐시만 사용. CSV 3개는 .cache/molecules/에 이미 내려받아 두었다)
 import hashlib, importlib.metadata as md, json, subprocess, time, warnings
 from pathlib import Path
 
@@ -208,7 +208,7 @@ for k, d in DATA.items():
     desc = pd.DataFrame([Descriptors.CalcMolDescriptors(m) for m in d["mols"]])
     X["RDKit-8"] = np.nan_to_num(desc[RD8].values.astype(np.float64), nan=0.0, posinf=0.0, neginf=0.0)
     full = desc.replace([np.inf, -np.inf], np.nan).fillna(0.0)
-    full = full.loc[:, full.std() > 0]                       # 노트북 05/01과 같이 *전체* 데이터에서 상수인 열만 제거(라벨은 쓰지 않는 transductive 전처리; 폴드 안에서 하지 않았다)
+    full = full.loc[:, full.std() > 0]                       # 노트북 05/01과 같이 *전체* 데이터에서 상수인 열만 제거(라벨은 쓰지 않는 transductive 전처리이며, 폴드 안에서 하지 않았다)
     X["RDKit-217"] = signed_log1p(np.clip(full.values.astype(np.float64), -1e12, 1e12))
     X["ChemBERTa-MLM"], nt = chemberta_mean("MLM", smi)
     X["ChemBERTa-MTR"], _ = chemberta_mean("MTR", smi)
@@ -220,7 +220,7 @@ print(f"표현 {time.time() - t0:.0f}s")
 
 # ---------- 5. 평가 (노트북 05/01과 같은 head·절차) ----------
 def make_model(rep, head, kind):
-    # 선형 head의 alpha는 노트북 05/01과 같은 RidgeCV/RidgeClassifierCV(내부 leave-one-out, 분할 그룹을 고려하지 않음; 표준화는 훈련 폴드 전체로 한 번 적합)
+    # 선형 head의 alpha는 노트북 05/01과 같은 RidgeCV/RidgeClassifierCV(내부 leave-one-out이며 분할 그룹을 고려하지 않는다. 표준화는 훈련 폴드 전체로 한 번 적합한다)
     if head == "linear":
         core = RidgeCV(alphas=ALPHAS) if kind == "reg" else RidgeClassifierCV(alphas=ALPHAS)
         return core if rep == "ECFP4" else make_pipeline(StandardScaler(), core)
@@ -249,8 +249,8 @@ for k, d in DATA.items():
         for rep in REP_NAMES:
             for head in ["linear", "rf"]:
                 OOF[(k, sp, rep, head)] = run_cv(REPS[k][rep], d["y"], FOLDS[k][sp], rep, head, d["kind"])
-    # 음성 대조: 각 폴드에서 *훈련* 라벨만 섞은 ECFP4 선형 head를 원래 test 라벨로 평가 (scaffold 분할, 순열 N_PERM회; 순열 r은 반복 r % R의 폴드를 쓴다).
-    # (전체 라벨을 한 번 섞어 모든 폴드에 쓰고 원래 라벨로 평가하면 AUROC가 0.5보다 낮게 치우쳐 나왔다 — 첫 실행의 BACE 0.458·ClinTox 0.437 — 그래서 폴드 안 순열로 바꿨다)
+    # 음성 대조: 각 폴드에서 *훈련* 라벨만 섞은 ECFP4 선형 head를 원래 test 라벨로 평가 (scaffold 분할, 순열 N_PERM회. 순열 r은 반복 r % R의 폴드를 쓴다).
+    # (전체 라벨을 한 번 섞어 모든 폴드에 쓰고 원래 라벨로 평가하면 AUROC가 0.5보다 낮게 치우쳐 나왔다. 첫 실행은 BACE 0.458, ClinTox 0.437이었다. 그래서 폴드 안 순열로 바꿨다)
     for sp in ["scaffold"]:
         sh = np.zeros((N_PERM, len(d["y"])))
         for r in range(N_PERM):

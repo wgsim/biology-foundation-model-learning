@@ -2,7 +2,7 @@
 
 > **English translation.** AI-assisted translation of the [Korean original](track_E_candidates.md). The Korean original is authoritative and may be newer. Links to pages without an English version open the Korean original.
 
-This is a record of applying the 4 selection conditions of [Capstone README §3](../README.en.md#3-track-e-paper-reproduction-protocol) to the [비판] (critique) and [벤치마크] (benchmark) papers in the [reading_list](../../resources/reading_list.md), in order to **narrow down the candidates for the dry run**.
+This is a record of applying the 4 selection conditions of [Capstone README §3](../README.en.md#3-track-e-paper-reproduction-protocol) to the [비판] (critique) and [벤치마크] (benchmark) papers in the [reading_list](../../resources/reading_list.en.md), in order to **narrow down the candidates for the dry run**.
 
 > **What this record is**
 > - **A candidate survey, not a reproduction.** There was no new download, installation or computation. Public repository, model and dataset pages (GitHub API, Hugging Face API, README files) were read, and the files that were read were not saved.

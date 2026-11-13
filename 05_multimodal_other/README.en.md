@@ -1,0 +1,252 @@
+# 05. Multimodal · Other — Models Linking Molecules, Images and Text with Sequences, and Critical Evaluation
+
+> **English translation.** AI-assisted translation of the [Korean original](README.md). The Korean original is authoritative and may be newer. Links to pages without an English version open the Korean original.
+
+**Duration**: Weeks 13–14 (2 weeks, about 16–20 hours) · **Compute tier**: 🟢 2 local Mac (CPU/MPS) notebooks
+**Prerequisites**: [module 01](../01_foundations/) (split, leakage), [module 02](../02_protein/) (embedding probe, bootstrap), [module 04](../04_single_cell/) (baselines, random-init controls, reading critique papers).
+
+> Notation: † marks a statement that must be checked directly in the paper text or the model card. In this repository, only the abstract, model-card and repository-metadata level was checked. The cited papers are in section 05 of the [reading_list](../resources/reading_list.en.md). This is information as of 2026-11, and models change quickly.
+
+---
+
+## Learning goals
+1. Distinguish the **four designs** that the word "multimodal" refers to (frozen per-modality encoders + head, contrastive alignment, multi-track unified models, agents that use text as an interface), and explain what each discards and assumes.
+2. Know that the **invariances** of molecular representations (SMILES strings, ECFP fingerprints, descriptors) differ, and compare chemical language-model embeddings with ECFP, RDKit descriptors and random initialization with the **same head and the same split**.
+3. Measure **leakage with numbers** (test→train nearest similarity) across random → scaffold → similarity-cluster splits, and see whether the conclusion changes with the split.
+4. Implement InfoNCE contrastive alignment by hand, and explain how **gallery size, tie handling, false negatives and the modality gap** change the retrieval metrics.
+5. Stratify how alignment performance moves together with **homologs and near-duplicate text** (the two effects are intertwined, so they cannot be separated into independent contributions).
+6. Summarize the critical evaluations (Praski 2025, Guo 2024, de Jong 2025) accurately, but **do not generalize them into a failure of FMs as a whole**. Build the habit of checking the **provenance and safety** of gated models, remote code and pickle weights.
+
+## Two-week schedule
+| Week | Topic | Notebook | Reading (mainly ★) |
+|---|---|---|---|
+| 13 | Chemical LMs vs ECFP·descriptors, 3 splits, FM-specific checks | [01](notebooks/01_chemical_lm_vs_fingerprints.ipynb) | MoleculeNet, Praski 2025, Guo 2024, ChemBERTa-2 |
+| 14 | Sequence–text contrastive alignment, gallery·ties·near-duplicates | [02](notebooks/02_protein_text_contrastive.ipynb) | CLIP, ProtST, modality gap, CONCH·UNI, de Jong 2025 |
+
+**The module deliverable** is one of two. One is a 1-page report that reproduces the comparison of notebook 01 on **another MoleculeNet task that you choose** and summarizes whether the conclusion changes with the split (exercise 3). The other is a result table checking how the conclusion changes when you **change the split and the evaluation design** of notebook 02 (exercises 4–5). Write down the design — comparison targets, split, metrics, tuning procedure — **before seeing the results**.
+
+---
+
+## 1. The four designs that "multimodal" refers to
+| Approach | Representative | Idea | What is discarded / risk |
+|---|---|---|---|
+| **Frozen per-modality encoder + head** | ChemBERTa + linear head (notebook 01), UNI + linear probe† | Take embeddings out of each modality's FM and solve the task with a small head | The *head and the split* give the verdict on whether the embedding holds the task information. Sensitive to the choice of layer, pooling and input notation (notebook 01 §7–8) |
+| **Contrastive alignment** (CLIP-type) | CLIP, CONCH, ProtST†, ProTrek†, CellWhisperer† | Two encoders learn to bring a *pair* close in the same space and push other pairs apart | Other pairs in the same batch are treated as negatives (false negatives), duplicated text, the modality gap (notebook 02) |
+| **Multi-track unified model** | AlphaFold 3, ESM3, Boltz-1/2†, Chai-1† | One model handles several kinds of input/output — sequence, structure, (ligands, nucleic acids, etc.) | Depends on the input format, training-data overlap, the design of the evaluation split (partly covered in module 02) |
+| **Text as the interface** | BioGPT, Coscientist, ChemCrow, Biomni | An LLM calls literature, tools and lab equipment | A matter of the **tools, prompts and evaluation design**, not of model performance. Evaluation contamination and tool errors get mixed in |
+
+> † marks statements that need to be checked in the paper text. The notebooks of this module directly run only the first two approaches. Pathology FMs such as UNI and CONCH need **access approval (gated)** on Hugging Face, so this repository did not run them (§8).
+
+## 2. Molecular representation: the same molecule, three faces
+| Representation | Example | Invariance for the same molecule | Notes |
+|---|---|---|---|
+| **SMILES string** | `CCO`, `OCC` | ✗ A different string for each notation (notebook 01 §8) | Input of language models. Whether the notation was normalized in pretraining **could not be confirmed**, since there is no model card |
+| **ECFP** (circular fingerprint) | radius 2, 2048-bin count | ✓ Computed from the graph | No learning. There are hash collisions, and the number of bins and the radius are fixed (not tuned) |
+| **RDKit descriptors** | 199–211 of the 217, after removing constant columns (MolLogP, TPSA, fragment counts, etc.) | ✓ | The value ranges are extreme, so a signed `log1p` is applied and then they are standardized |
+| **Graph / 3D** | Chemprop, Uni-Mol† | ✓ (structure-based) | Not run in this module |
+
+**What ChemBERTa-77M is**, as confirmed: it is a RoBERTa-type model with 3 layers, hidden size 384, vocabulary 600 and maximum positions 515, and the number of parameters without the pooler is about 3.3 million (checked from the repository `config.json` and the loaded model). The "77M" is not the number of parameters but the number of PubChem molecules used in pretraining. The ChemBERTa-2 abstract says up to 77M compounds. The two variants differ in pretraining objective. **MLM** is masked-token prediction and **MTR** is multi-task regression. The MTR checkpoint contains `regression.*` layers and `norm_mean/norm_std`. The statement that the regression targets are *molecular properties computed with RDKit* has no model card, so it must be checked in the paper text†. Notebook 01 §9 checks this *indirectly*.
+
+**scaffold** — the Bemis–Murcko scaffold is what remains of a molecule after keeping only the ring systems and the chains linking them. A molecule without rings has an empty scaffold. If these were lumped into one giant group (28% in ESOL), the split would become a different problem, so in this module each such molecule is placed in its own group (notebook 01 §2).
+
+## 3. Model lineage — confirmed facts vs †
+| Model | Confirmed facts (abstract/metadata level) | † Needs checking in the paper text |
+|---|---|---|
+| **ChemBERTa-2** (Ahmad et al. 2022, arXiv) | A chemical FM for SMILES. Compares multi-task (MTR) and self-supervised (MLM) pretraining, with pretraining data of up to 77M PubChem compounds. The abstract reports that it is "competitive" with state-of-the-art architectures on MoleculeNet. | Whether fine-tuning was done and its settings (we used only frozen embeddings) |
+| **MoLFormer** (Ross et al. 2022, Nat Mach Intell) | Chemical language representation. `MoLFormer-XL-both-10pct` on HF is Apache-2.0 and requires **remote code (`trust_remote_code`)**. | Pretraining scale, architecture |
+| **Uni-Mol** (ICLR 2023) | A 3D molecular representation-learning framework (title level) | Input, objective |
+| **UNI / CONCH** (Chen, Lu et al. 2024, Nat Med) | Pathology image FMs (UNI is unimodal, CONCH is vision–language). By HF metadata, **access approval is required** (`gated=auto`), and the license is listed as cc-by-nc-nd-4.0. | Training data, evaluation tasks |
+| **Virchow / Prov-GigaPath** (2024) | 2 pathology FM papers (Nat Med / Nature). The HF weights need access approval. | Scale, evaluation |
+| **AlphaFold 3 / ESM3 / Boltz-1·2 / Chai-1** | See module 02 and the reading_list. In this module they are mentioned only as a multi-track design in the sense that "one model handles several kinds of molecules". | Input tokenization, binding-affinity head |
+| **ProtST** (Xu et al. 2023) | Built the ProtDescribe (sequence + text description) data and pretrained with 3 tasks — unimodal masked prediction, **multimodal representation alignment** and multimodal masked prediction — with supervised/zero-shot applications (abstract). | Scale, evaluation split |
+| **ProTrek / CellWhisperer** | Title level (tri-modal contrastive / transcriptome–text multimodal learning). | Almost everything |
+| **LAB-Bench** (Laurent et al. 2024) | **At least 2,400 research-practice multiple-choice questions** — literature, protocols, data analysis, sequence manipulation, etc. (abstract). For evaluating agents/LLMs. | Contamination |
+
+> The scale and performance numbers are not a ranking for direct comparison between models. The corpora, evaluations and purposes differ from one another.
+
+## 4. Contrastive alignment by hand — the core of notebook 02
+From the normalized embeddings of the $B$ pairs $(s_i,t_i)$ in a batch, build the cosine matrix $S_{ij}$, and on the logits divided by the temperature $\tau$, solve in both directions the **$B$-way classification in which "the same index is the answer"**.
+
+$$\mathcal L=\tfrac12\big[\mathrm{CE}(S/\tau,\ \mathrm{arange}(B))+\mathrm{CE}(S^{\top}/\tau,\ \mathrm{arange}(B))\big]$$
+
+- **The negatives are all the other pairs in the batch.** If two proteins of the same family go into the same batch, they are treated as negatives even though they are effectively correct. This is a false negative and is covered in exercise 5.
+- **The temperature $\tau$** decides how sharp the distribution is made. In this experiment we trained starting from 0.07, and it became 0.042 in fold 0. If all the logits are equal, the loss before training is exactly $\ln B$, that is, 5.545. With a random head and $\tau=0.07$, the logits have variance, so it is a little larger. It was measured as 5.871 when standard normal random numbers were fed in, and on the real data the first-epoch mean in fold 0 was 4.652.
+- **The evaluation is defined by the gallery.** Recall@1 means something different when there are about 1,479 candidates than when there are 7,397. Ties are counted against the correct answer (lesson 9 of §5).
+- The **modality gap** (Liang et al. 2022†) is the phenomenon where, even after alignment, the embeddings of the two modalities gather in different regions. In this experiment, the distance between the two modality centers after training was 0.20, small compared with the spread of each modality, about 0.99. The 1.03 obtained from the untrained random head is a product of the head initialization and the difference in input scale (the sequence is z-scored, the text is L2-normalized), so it must not be read as "the gap that training reduced".
+
+## 5. What we saw in this data — summary of the results of notebooks 01–02
+All numbers are values from one run on a Mac with seeds 0–2, so **check the full notebook outputs**. All the intervals are the **conditional intervals** of a bootstrap. They are intervals for predictions that were already computed, and do not include the variation from retraining the model.
+
+### 5-A. Chemical language models vs fingerprints·descriptors (notebook 01)
+Lipophilicity (logD, n=4200), linear head, RMSE (lower is better) [95% interval, **Butina-cluster-level bootstrap** B=300], mean of 3 repeats.
+
+| Representation | random | scaffold | similarity cluster |
+|---|---|---|---|
+| test→train nearest Tanimoto median (fraction ≥ 0.7) | 0.70 (0.49) | 0.57 (0.26) | 0.37 (0.05) |
+| ECFP4 (count) | 0.750 [0.721, 0.779] | 0.806 [0.774, 0.840] | 0.923 [0.870, 0.975] |
+| RDKit descriptors (208, constant columns excluded) | 0.839 [0.787, 0.910] | 0.864 [0.816, 0.927] | 0.907 [0.849, 0.968] |
+| RDKit 8 | 1.041 [0.987, 1.094] | 1.045 [0.991, 1.098] | 1.058 [1.001, 1.114] |
+| ChemBERTa-MLM | 0.829 [0.800, 0.862] | 0.860 [0.826, 0.891] | 0.915 [0.869, 0.959] |
+| ChemBERTa-MTR | 0.817 [0.772, 0.871] | 0.873 [0.821, 0.934] | 0.925 [0.870, 0.981] |
+| MLM random initialization | 1.033 [0.984, 1.076] | 1.049 [0.999, 1.096] | 1.076 [1.026, 1.124] |
+
+The pre-specified primary comparisons (linear head, paired difference [interval]; for RMSE a negative value, and for the ROC-AUC of BBBP (the mean of the per-fold AUCs) a positive value, means that MLM is better):
+
+| Task | Split | (a) MLM − ECFP4 | (b) MLM − random initialization |
+|---|---|---|---|
+| ESOL (RMSE) | random | +0.001 [−0.050, +0.063] | −0.465 [−0.936, −0.147] |
+| | scaffold | −0.025 [−0.094, +0.049] | −0.327 [−0.671, −0.088] |
+| | cluster | −0.019 [−0.113, +0.079] | −0.352 [−0.752, −0.070] |
+| Lipophilicity (RMSE) | random | +0.079 [+0.055, +0.102] | −0.204 [−0.245, −0.169] |
+| | scaffold | +0.054 [+0.027, +0.080] | −0.189 [−0.233, −0.153] |
+| | cluster | −0.007 [−0.054, +0.047] | −0.161 [−0.210, −0.114] |
+| BBBP (ROC-AUC) | random | −0.032 [−0.049, −0.017] | +0.060 [+0.032, +0.092] |
+| | scaffold | −0.020 [−0.040, −0.002] | +0.056 [+0.029, +0.087] |
+| | cluster | −0.001 [−0.022, +0.020] | +0.055 [+0.023, +0.092] |
+
+**What we learned (the grounds are in the corresponding sections of the notebook)**
+1. **The stricter the split, the lower the score, and the fingerprints fall the most. However, it is not monotonic in every cell** (§3, §5). The ECFP4 RMSE on Lipophilicity worsens as 0.750, 0.806, 0.923, and the ECFP4 ROC-AUC on BBBP as 0.920, 0.897, 0.868. But for the MLM with a linear head on ESOL, it goes down instead, from 1.044 on scaffold to 1.002 on cluster. The scaffold split has a median nearest similarity of 0.57, and on Lipophilicity 26% of the test has a similarity of 0.7 or more, so it is **not new chemistry**. This points in the same direction as Guo 2024. The cluster split, at 0.37, is not perfect either, because the similarity between Butina clusters is not transitive.
+2. **The conclusion changes with the split** (§6). Looking at MLM − ECFP4 on Lipophilicity, ECFP4 is better in random (+0.079) and scaffold (+0.054). But in the cluster split it is −0.007 and the interval includes 0, so a difference cannot be claimed. BBBP shows the same pattern with −0.032, −0.020, −0.001. Conversely, there is no evidence in any cell that MLM is better.
+3. **The conclusion changes with which baseline you choose** (§5). On ESOL, the RDKit descriptors with the constant columns removed (199) have an RMSE 0.33–0.35 lower than ECFP4 and MLM in the scaffold and cluster splits. On scaffold it is 0.719, while ECFP4 is 1.070 and MLM is 1.044. Even using only 8 RDKit descriptors gives 1.025 on ESOL scaffold, whose interval overlaps with ECFP4 (Δ −0.044 [−0.134, +0.036]). Conversely, on Lipophilicity, 8 RDKit descriptors give 1.045, which is much worse. **Do not compare against only one baseline.**
+4. **The contribution of pretraining depends on the head and the task, so it cannot be summarized in one sentence** (§5–6). With the linear head, MLM beats random initialization on every task. But with a random forest head, on ESOL scaffold the random initialization is better, at 1.012, than MLM at 1.441, and on BBBP scaffold they are nearly the same at 0.878 and 0.890. With the linear head on ESOL, a few extrapolated predictions dominate the RMSE. In scaffold split repeat 0, MTR has 6 predictions with an error above 4 and a maximum error of 14.6. The 3 largest errors are all benzodiazepine-family molecules, whose actual logS is about −3.6 to −3.8 but which were predicted as −17 to −18. The random initialization has a maximum error of 21.8, and its per-fold α ranges erratically from 0.1 to 316. The maximum errors of MLM and ECFP4 are 5.2 and 4.8. So the differences in the ESOL linear-head cells are hard to trust.
+5. **The choice of layer and pooling is as large as the difference between methods** (§7). On Lipophilicity scaffold, the MTR mean pooling differs by 0.068 between layer 2 (0.805) and layer 3 (0.873). This is larger than 0.054, the difference between MLM and ECFP4. The `<s>` token of layer 0 has the same input for every molecule (`<s>`, position 0), so it becomes a **constant vector** and the model predicts only the training mean. As a result, the ESOL RMSE is 2.110, at the same level as the standard deviation of y, 2.09, and the per-fold AUC on BBBP is exactly 0.500. At first, the folds were pooled to compute the AUC, giving 0.460, but this was an artifact created by the different mean predictions of each fold, so it was changed to the mean of the per-fold AUCs. The best was not picked after seeing the results.
+6. **Language models are sensitive to notation, but fingerprints are not** (§8). When the same molecule is fed in canonical and randomized notation, the embedding cosine is 0.831 for MLM, while for pairs of different molecules it is 0.751. For MTR they are 0.965 and 0.893. If you feed a randomized notation at test time to a head trained on the canonical notation, the Lipophilicity RMSE worsens from 0.863 to 1.448 for MLM and from 0.852 to 1.139 for MTR. The BBBP AUC also falls from 0.880 to 0.826 for MLM and from 0.866 to 0.810 for MTR. On ESOL, the linear head is unstable, so the direction is not consistent (MTR 1.250 to 1.056). Using **the same normalization rule** for training and inference is one remedy (exercise 2).
+7. **The MTR embedding holds a lot of RDKit descriptor information** (§9). When the 208 descriptors of the Lipophilicity molecules were recovered linearly from the embeddings, the median out-of-fold R² was 0.949 for MTR, 0.904 for ECFP4, 0.717 for MLM and 0.474 for random initialization. The means are pulled down by the negative R² of rare descriptors, giving 0.80, 0.75, 0.63 and 0.49 respectively. The descriptors for which MTR improves most over MLM are the `fr_*` family, which count functional groups (+0.84 to +0.99). If the MTR objective is regression on RDKit descriptors†, comparing MTR with a descriptor baseline can be nearly circular. However, this experiment only shows that the information is in there, and does not prove the pretraining *objective*. Rare descriptors such as `fr_azo` go down to an R² of −8.6, but the denominator is small and unstable, so read the median.
+
+> **There are limitations.** This is the result of one small model with 3 layers and about 3.3 million parameters, 3 small MoleculeNet datasets, frozen embeddings with a fixed head, no tuning per representation, and seeds 0–2. The pipeline also differs per representation. ECFP4 uses only `log1p` without standardization, and the others use a `StandardScaler` of the training fold, so the meaning of the Ridge penalty differs. The original regression head of MTR and the input normalization rule used in pretraining were not used, since there is no model card, and only the mean-pooled backbone was used. The bootstrap is a conditional interval over fixed predictions. It does not replace the large-scale comparison of Praski 2025, which compared 28 models and 25 datasets. Do not generalize to "ChemBERTa is worse than ECFP".
+
+### 5-B. Sequence–text contrastive alignment (notebook 02)
+We use 7,397 human Swiss-Prot proteins. This is the count after removing 21 sequences that are identical down to the letter in release 2026_04. It is seq→text retrieval, and since the candidate gallery is about 1,479, the chance-level R@1 is 0.07% and R@10 is 0.68%. It is evaluated with 5 folds, and ties are counted against the correct answer. The R@1 interval is a Pfam-group bootstrap, and is the value that pools the per-query ranks.
+
+| Method | random R@1 [95%] | random R@10 | Pfam-group R@1 [95%] | Pfam-group R@10 | Group median rank |
+|---|---|---|---|---|---|
+| Nearest-neighbor transfer (ESM, no training) | 0.169 [0.148, 0.189] | 0.369 | 0.018 [0.014, 0.024] | 0.087 | 0.208 |
+| Nearest-neighbor transfer (composition, 420 dimensions) | 0.155 [0.130, 0.175] | 0.302 | 0.005 [0.003, 0.007] | 0.026 | 0.365 |
+| Linear map (ESM → text) | 0.050 [0.042, 0.059] | 0.259 | 0.015 [0.012, 0.020] | 0.106 | 0.097 |
+| **CLIP head (ESM)** | 0.123 [0.106, 0.139] | 0.357 | 0.015 [0.011, 0.020] | 0.085 | 0.173 |
+| CLIP head (composition) | 0.048 [0.038, 0.056] | 0.159 | 0.002 [0.001, 0.003] | 0.024 | 0.334 |
+| Trained with shuffled pairs (control) | 0.001 [0.000, 0.001] | 0.006 | 0.000 [0.000, 0.000] | 0.005 | 0.454 |
+
+The pre-specified primary comparison is seq→text R@1. CLIP − nearest-neighbor transfer is −0.046 [−0.055, −0.036] in random and −0.003 [−0.007, +0.000] in the Pfam group. CLIP(ESM) − CLIP(composition) is +0.076 [+0.064, +0.089] in random and +0.013 [+0.009, +0.019] in the Pfam group. CLIP − linear map is +0.074 [+0.060, +0.086] in random and −0.001 [−0.004, +0.003] in the Pfam group. For text→seq, the R@1 of CLIP(ESM) is 0.135 in random and 0.017 in the Pfam group.
+
+**What we learned**
+1. **Check the pipeline first** (§5). When trained with shuffled pairs, R@1 stays at 0.0–0.1%, the chance level of 0.07%. In this control, no sign was seen that indices or order had leaked. Of course, this is not proof that there is no leakage of any kind.
+2. **In the pre-specified 40-epoch setting, the trained alignment did not exceed the nearest-neighbor transfer that needs no training** (§5). In random the nearest-neighbor transfer is 0.046 higher, and in the Pfam group it is −0.003, which is effectively the same. However, it depends on the setting. At epoch 10, the R@10 in the Pfam group is 0.107 and the median rank is 0.120, whose point estimates are better than the 0.087 and 0.208 of the nearest-neighbor transfer. R@1 is 0.016 for the trained alignment and 0.018 for the nearest-neighbor transfer, and with a single seed there is no interval (§7). Since this is not a result of choosing the epoch with a validation split and confirming with multiple seeds, we do not generalize about which is better.
+3. **Homologs move together with the score** (§3, §5). We aligned 300 randomly drawn test proteins of fold 0. In the random split, the fraction that had a homolog (identity of 30% or more, query coverage of 50% or more) among the top 30 ESM neighbors in train was 57%, and when looking only at the highest-scoring candidate, 54%. In the Pfam group they fall to 8% and 5%. With the same change, the R@1 of CLIP falls to about 1/8, from 0.123 to 0.015, and R@10 falls from 0.357 to 0.085. Even so, the R@10 of 0.085 is about 12 times the chance level of 0.0068. So the statement that fits the data is not "it learned nothing" but "a considerable part of the random-split score comes from proteins that have homologs". The difference between the two splits cannot be reduced to the causal contribution of homologs alone.
+4. **Near-duplicate text is another associated factor** (§6). The fraction of test texts that have a sentence with cosine 0.9 or more in train is 33% in random and 17% in the Pfam group. The fraction that has a sentence identical down to the letter in train is 21% and 11%. The most common text is "Odorant receptor..", shared by 409. The R@1 of CLIP for queries that have a near duplicate is 0.214 in random, while for those without it is 0.079. In the Pfam group, it is 0.031 and 0.011. That some of the sentences in UniProt annotations may have been transferred on the basis of sequence similarity is only a possible explanation, and we could not confirm it with this experiment. Homologs and text duplication are intertwined and cannot be separated independently.
+5. **The gain from the PLM differs in size by split** (§5). CLIP(ESM) − CLIP(composition) is +0.076 in random and +0.013 in the Pfam group, a small absolute value. Even a nearest-neighbor transfer using only amino-acid and dipeptide composition gets an R@1 of 0.155 in random. This means the value of the sequence encoder shows up only when you set the homologs aside.
+6. **The ranking of methods changes with the metric** (§5). In the Pfam group, the linear map has a low R@1 of 0.015, but it has the best R@10 of 0.106 and the best median rank of 0.097. Do not say "the best" with a single metric.
+7. **The pre-specified setting is not the optimum** (§7). In the Pfam group, R@1 is in the range 0.012–0.016, R@10 is 0.074–0.107 and the median rank is 0.120–0.199, and epoch 10 is the best on R@10 and on the median rank. 40 epochs may show a sign of overfitting, but since this is a test comparison with a single seed, the cause cannot be settled. Since the setting was not chosen on the test set, this value is only reported.
+8. **Look at the nature of the errors** (§6). An example from the Pfam group of fold 0: for EXTL2, the correct rank is 5th among 1,480, and the top candidates include a sugar-degrading enzyme (CTBS), a DNA polymerase (POLB) and a xylose transferase (XXYLT1). For BARX2 at rank 232, the top candidates are all descriptions of transcription regulation, and for NUP43 at rank 1,054, the top candidates are descriptions of members of eIF3, a different complex. Recall, which accepts only one correct answer, is a conservative metric.
+9. **How ties are handled can inflate the metric** (§5). In the first implementation, the rank was defined as "the number of candidates whose score is *higher* than the correct one". In the nearest-neighbor transfer, the query is exactly the same vector as a train text, so when the same sentence appears several times in test, all of them were treated as rank 1. In that case the seq→text R@1 was 0.260 in random and 0.039 in the Pfam group. When ties are counted against the correct answer, they become 0.175 and 0.017, and after removing sequence duplicates afterward, 0.169 and 0.018. Because the fraction of queries in the same gallery that have another query with text identical down to the letter is 16% in random and 20% in the Pfam group, the upper bound of R@1 under this definition is about 0.84 and 0.80 respectively. The scores were rounded to 6 decimal places so that floating-point noise would not break ties.
+10. **Also check sequence duplicates** (§1, §3). At first, the 21 sequences identical down to the letter were left as they were, and in the random split 33 test proteins had the same sequence in train (0 in the Pfam group). Keeping only the first row and removing the duplicates took 7,418 to 7,397.
+
+> **Limitations**: One species (human proteins), UniProt curated text, a frozen encoder + a small head, 5-fold with seed 0, fixed settings. MiniLM truncated 935 texts (12.6%) at 256 tokens. A Pfam connected component is not a truly low-identity split, and the identity measurement is an approximation measured on a sample of 300 of fold 0 with a BLOSUM62 local alignment (not MMseqs2). With a change of UniProt release, the same numbers cannot be reproduced (§8). It is a value that pools the per-query ranks of the different model of each fold. It does not represent the performance of large-scale models such as ProtST and ProTrek.
+
+## 6. How to read the critical evaluations
+- **Praski, Adamczyk, Czech (2025, preprint)** state in the abstract that they compared 28 pretrained molecular embeddings — graph, text and mixed structures — on 25 classification datasets. They report that **no neural model other than CheMeleon exceeded the ECFP count fingerprint**, and that on external data based on scaffold cross-validation neither side showed a clear advantage. Notebook 01 of this module looked at the same question at a much smaller scale, with *one small model and 3 small datasets*. The direction is the same, but the statistical design differs.
+- **Guo, Hernandez-Hernandez, Ballester (2024, preprint)** point out in the abstract that scaffold splits also overestimate virtual-screening performance. This is because even when the scaffolds differ, the molecules are similar to each other, so the similarity between train and test is still high. The nearest-similarity median of 0.57 for the Lipophilicity scaffold split, measured in this module, shows the same phenomenon. However, that paper's UMAP cluster split and NCI-60 setting were not reproduced.
+- **de Jong, Marcus, Teuwen (2025, preprint)** report in the abstract that all 10 public pathology FMs they evaluated strongly represent **medical-center signals** such as staining and equipment. They say there is only one model in which biological features overwhelm the medical-center signal, and even that narrowly. This means not "FMs cannot be used in pathology" but "**check whether the evaluation split crosses centers**". In this repository, it could not be run because it is a model that needs access approval, and it is covered as a design document in exercise 6.
+- For **Liang et al. (2022)**, we checked only up to the title and generally known content, and could not read the abstract†. It deals with the "modality gap", in which the two modalities gather in different regions in the embeddings of multimodal contrastive models. In this module's experiment, the gap after training was small. However, because the head is small and the encoder is frozen, the settings differ, so we neither confirmed nor refuted that paper's claim.
+- **Do not generalize.** All are results of *specific models, tasks and settings*. Results under conditions such as fine-tuning, small amounts of labels, 3D information, larger models and time splits are a separate matter. For each paper, we checked only statements at the abstract level.
+
+## 7. Checklist for evaluating multimodal FMs
+- [ ] **Duplicates**: Did you merge the same object (canonical SMILES, sequence)? What did you do when labels conflicted? (BBBP has 60 groups, 10 conflicts)
+- [ ] **Leakage of the split in numbers**: Did you report the test→train nearest similarity (molecules: Tanimoto, proteins: alignment identity and coverage, text: embedding cosine) *per split*? Did you avoid trusting only names such as scaffold/Pfam?
+- [ ] **3 or more baselines**: fingerprint, descriptors (a small set and a large one), nearest-neighbor transfer with no learning, random initialization. With the same head and the same split.
+- [ ] **Did you avoid choosing the head and the representation on the test set?**: Did you report the sensitivity of layer, pooling, temperature and epochs separately?
+- [ ] **Input invariance**: Do the results hold for another notation of the same object (SMILES) and another resolution?
+- [ ] **Retrieval evaluation**: gallery size, tie handling, the case with several correct answers, stratification by near duplicates, both directions (seq→text, text→seq).
+- [ ] **Circularity between the pretraining objective and the evaluation metric**: Has the pretraining directly learned something close to the evaluation answer? (MTR and RDKit descriptors)
+- [ ] **Images (pathology)**: a split that crosses centers and scanners, measurement of the center signal (de Jong 2025).
+- [ ] **Agents/LLMs**: Are you evaluating the system, not the model? Did you separate tool errors, contamination of the evaluation data and prompt sensitivity?
+- [ ] **Provenance and safety**: the weight format (pickle/safetensors), revision pinning, remote code, access approval (§8).
+
+## 8. Provenance and safety of weights and remote code
+- **The PyTorch `.bin` of this checkpoint is pickle-based.** ChemBERTa-77M provides only the `.bin` in the old sequential pickle format. Notebook 01 §1 scans the global objects that the pickle references and checks that only `collections.OrderedDict`, `torch.FloatStorage/LongStorage` and `torch._utils._rebuild_tensor_v2` appear. This check is only an approximation and **not a defense**. The real defense comes from the loading method. In the transformers 5.22.1 source of this environment, `load_state_dict` in `modeling_utils.py` reads the `.bin` with the default `weights_only=True`.
+- **`from_pretrained("repository ID", revision=...)` can fetch files different from the pinned revision.** When a `.bin`-only repository was opened in this environment, safetensors were additionally downloaded from `refs/pr/2` and `refs/pr/3`, the *automatic-conversion PR branches* of the Hub, and a separate snapshot was created in the cache. The tensors of the common keys were all the same as the `.bin`, but they are files that were not in the download plan. So the notebook loads the model only from the **local directory path** downloaded with `snapshot_download(revision=...)`.
+- Some models need **remote code (`trust_remote_code`)**. MoLFormer needs to run 873 lines of Python files in the repository. It was not used in this module. If you use it, pin the revision and the file hashes and run it *after reading* the code. Searching for dangerous calls with `grep` is not a careful reading.
+- UNI, CONCH, UNI2-h, Virchow and Prov-GigaPath, which are **gated models**, need agreement to the terms and a login. An agent does not agree or authenticate on your behalf. Obtain the approval yourself, and check the license, as with the cc-by-nc-nd-4.0 notation of UNI and CONCH.
+- **UniProt's content changes with each release.** The numbers in this repository were obtained with the file of release 2026_04 (sha256 `e3acc2dbebb9…`), and the notebook prints the hash. In this environment the `stream` endpoint returned 502, so the data is downloaded with the cursor method of the `search` endpoint.
+
+## 9. Colab
+We ran the two notebooks from start to finish on a Colab T4 runtime (2026-11-06, 1 run each). The runtime had a 15.6 GB GPU, 2 vCPUs and 12 GB RAM, with Python 3.13, torch 2.14.1+cu130, transformers 5.22.1, scikit-learn 1.6.1, pandas 2.2.3, numpy 2.4.6, rdkit 2026.9.1 and biopython 1.88. There were no errors, and the code cells that were run are the same as those of the notebooks in the repository. The Colab image does not have `Bio`, so you must install `rdkit` and `biopython`. The UniProt table of 02 was used by uploading the Mac's file (release 2026_04, same sha256). If you download it anew on Colab, the release may differ.
+
+| Notebook | Colab T4 | Mac | Comparison of results |
+|---|---|---|---|
+| 01 | about 60 minutes (representation computation 187 seconds · cross-validation about 43 minutes · bootstrap 316 seconds) | about 10 minutes | The 18 cells of point estimates and intervals in the §5 table were identical down to the letter |
+| 02 | about 25 minutes (ESM-2 35M embeddings 63 seconds · contrastive learning 630 seconds · sensitivity 699 seconds) | about 7 minutes | The point estimates and intervals differed within ±0.001 (e.g., random split CLIP(ESM) R@1 interval [0.106, 0.138] vs Mac [0.106, 0.139]). The direction and sign of the primary comparison, and whether the interval includes 0, were the same |
+
+- **The Colab T4 was slower.** 01 is mostly CPU work in sklearn cross-validation and bootstrap, and Colab has only 2 vCPUs. 02 repeats many small operations, so there was almost no GPU gain. It is a single run and the cause was not separated. It is in the same direction as the measurement in module 04.
+- **The example queries change with the environment.** EXTL2, BARX2 and NUP43, the error examples of lesson 8, are drawn at the rank quantiles of 5%, 50% and 90%, so even a slight difference in training gives different proteins. On Colab, FABP1 (5/1480), RNF13 (232/1480) and IQCF1 (1055/1480) came out at the same quantiles. Read the rank distribution, not individual examples.
+
+## 10. Comprehension check
+
+**Q1.** If the same molecule is written with a different SMILES, what happens to the ECFP and ChemBERTa embeddings, respectively? What should you do at deployment?
+<details><summary>Answer</summary>
+ECFP and RDKit descriptors are computed from the molecular graph, so they do not depend on the notation. Confirm in notebook 01 §8 that the values are the same. ChemBERTa, on the other hand, reads the string as tokens, so the result changes. When the same molecule is fed in canonical and randomized notation, the median embedding cosine is 0.831 for MLM, only slightly higher than the 0.751 of pairs of different molecules. When a randomized notation is fed to a head trained on the canonical notation, the Lipophilicity RMSE worsened from 0.863 to 1.448. At deployment, you should <b>normalize the input with the same rule</b>, and check whether notation augmentation was used in training (exercise 2).
+</details>
+
+**Q2.** Using this module's evidence, explain why the scaffold split does not guarantee "new chemistry".
+<details><summary>Answer</summary>
+Different scaffolds only mean that the ring systems or the connecting structures between rings differ, and the similarity of the whole molecule can be high. In Lipophilicity, the median test→train nearest Tanimoto was 0.70 for the random split, 0.57 for scaffold and 0.37 for the similarity cluster. The fractions at 0.7 or more are 0.49, 0.26 and 0.05, respectively. Even in the scaffold split, 1/4 of the test has a molecule in train that is similar at 0.7 or more. The cluster split is not perfect either, because the similarity between clusters is not transitive. So you must report the <b>similarity distribution</b>, not the name of the split.
+</details>
+
+**Q3.** Why include a random-initialization control, and what should you watch for in reading its results in this module?
+<details><summary>Answer</summary>
+To separate what pretraining gave from what the architecture and the input token sequence give. With the linear head, MLM beats random initialization on all tasks. The Lipophilicity RMSE is 0.19 lower and the BBBP AUC is 0.06 higher. But on ESOL, the linear head is unstable because of extrapolation in some folds, so the interval is wide. With a random forest head, on ESOL scaffold the random initialization is actually better, at 1.012, than MLM at 1.441. So "pretraining helps" cannot be said without the head and task conditions.
+</details>
+
+**Q4.** Why might it not be fair to compare ChemBERTa-MTR embeddings with an RDKit descriptor baseline?
+<details><summary>Answer</summary>
+We confirmed that the MTR checkpoint has regression layers, and it is known that the regression targets are molecular properties computed with RDKit†. In notebook 01 §9, the median R² for linearly recovering the 208 RDKit descriptors from the MTR embedding is 0.949, higher than 0.717 for MLM, 0.904 for ECFP4 and 0.474 for random initialization. If the MTR objective is actually regression on RDKit descriptors†, it means that it received the descriptor information directly in pretraining. Then MTR coming out similar to the descriptor baseline may not be evidence that "it learned chemistry by itself". This experiment does not prove the pretraining *objective*, and only shows whether the information can be recovered linearly.
+</details>
+
+**Q5.** What is a false negative in InfoNCE, why can it be a problem with this data, and how do you reduce it?
+<details><summary>Answer</summary>
+All the other pairs in the same batch are treated as negatives. So if proteins of the same family or proteins with effectively the same sentence go into a batch together, a pair close to correct is learned as a negative. In this data, 409 Odorant receptors use the same sentence, and 16–20% of the test queries have another query with text identical down to the letter in the same gallery. There are three ways to reduce it: mask the same Pfam group or the same text within a batch, sample at the group level, or deduplicate the text (exercise 5).
+</details>
+
+**Q6.** Why must you not compare Recall@1 across studies with different gallery sizes, and what is a case in which tie handling changed the result?
+<details><summary>Answer</summary>
+Recall@k depends on the number of candidates. With about 1,479 candidates, the chance-level R@1 is 0.07%, and with 7,397 it is 0.014%. If the galleries differ between papers, they cannot be compared directly. Tie handling also matters. If the rank is defined as "the number of candidates whose score is higher than the correct one", then when there are several identical vectors, all of them become rank 1, and the R@1 of the nearest-neighbor transfer came out as 0.260 in random and 0.039 in the Pfam group. When ties are counted against the correct answer, it becomes 0.175 and 0.017, and after removing sequence duplicates, 0.169 and 0.018. State the definition together with the code, and if possible report the range of both approaches.
+</details>
+
+**Q7.** Why is a nearest-neighbor transfer baseline with no training essential? What did it reveal in this module?
+<details><summary>Answer</summary>
+Because you must sort out whether the performance of the learned alignment is better than simply copying the description of a similar sequence. In the 40-epoch setting fixed in advance, the nearest-neighbor transfer in the random split had an R@1 of 0.169, higher than the 0.123 of the CLIP head. In the Pfam group both were about 1.5–1.8%, effectively the same. Whether the learned alignment does more than copy homologs can be meaningfully asked only in a split that removes homologs.
+</details>
+
+**Q8.** How should a split that reflects the point of de Jong et al. be designed when evaluating pathology FMs?
+<details><summary>Answer</summary>
+Medical-center signals such as staining or scanners can be represented more strongly than tissue or cancer-type signals. So if train and test share slides from the same center, the model can get them right with center information. Split by center (leave-center-out), and also report whether the embedding distinguishes the center or the biological label better. For example, look side by side at the center classification accuracy and the tissue classification accuracy (exercise 6). In this repository, it could not be run because model access is restricted.
+</details>
+
+**Q9.** When reading benchmarks like LAB-Bench or agent papers, how should you read them as distinct from model evaluation?
+<details><summary>Answer</summary>
+A multiple-choice score shows the ability of literature recall and reasoning, but does not show the whole ability of experimental design. The success of an agent is the combined result of the model, the tools, the prompts and the environment. So you must sort out which element contributed with an ablation, check whether the evaluation questions were exposed to the training data, and look at how tool errors were handled. This repository checked only the abstract level and did not reproduce it directly.
+</details>
+
+---
+
+## 11. Reading (reading_list section 05)
+- Required: Wu et al. 2018 (MoleculeNet) · Praski et al. 2025 · Chen et al. 2024 (UNI) · Lu et al. 2024 (CONCH) · Radford et al. 2021 (CLIP, section 01)
+- Baselines and tools: Rogers & Hahn 2010 (ECFP) · Bemis & Murcko 1996 · Yang et al. 2019 (Chemprop) · Sheridan 2013
+- Advanced: Ahmad et al. 2022 (ChemBERTa-2) · Ross et al. 2022 (MoLFormer) · Zhou et al. 2023 (Uni-Mol) · Guo et al. 2024 · de Jong et al. 2025 · Liang et al. 2022 · Xu et al. 2023 (ProtST) · Cao & Gao 2022 (GLUE)
+- Agents: Boiko 2023 · M. Bran 2024 · Huang 2025 (Biomni) · Laurent 2024 (LAB-Bench)
+- Data: Delaney 2004 · Martins 2012 · UniProt release 2026_04
+
+## 12. Notebooks
+| # | File | Tier | Time (Mac) | Content |
+|---|---|---|---|---|
+| 01 | [01_chemical_lm_vs_fingerprints](notebooks/01_chemical_lm_vs_fingerprints.ipynb) | 🟢 | about 10 minutes (representation computation 44 seconds, cross-validation about 5 minutes, bootstrap about 2 minutes) | 3 MoleculeNet datasets, 3 splits and leakage measurement, ECFP·descriptors·ChemBERTa·random initialization, layer/pooling·notation·MTR checks |
+| 02 | [02_protein_text_contrastive](notebooks/02_protein_text_contrastive.ipynb) | 🟢 | about 7 minutes (including the 125 seconds of ESM-2 embeddings in the first run; about 5 minutes if the embedding cache exists) | UniProt sequence–function-text contrastive alignment: Pfam groups, near duplicates, ties, sensitivity |
+
+- The notebooks are committed to the repository **without outputs**.
+- The downloaded files are as follows. 3 MoleculeNet CSVs, about 0.5 MB in total; ChemBERTa-77M-MLM and MTR, about 14 MB each; UniProt TSV, about 3.4 MB (gz); all-MiniLM-L6-v2, about 91 MB; and rdkit, about 26 MB, which is fetched with pip. ESM-2 35M uses the cache of module 02. All go to `.cache/`, which is excluded from git.
+- Set up the environment by adding `rdkit` to `requirements/base.txt`. The times above are single values from running concurrently with other jobs, so they are not an accurate benchmark.
+
+## Next
+In [module 06](../06_advanced_research/) we move on to fine-tuning (LoRA), embedding interpretation (sparse autoencoders), efficiency and benchmark design. The evaluation habits of this module (measuring leakage with numbers, several simple baselines, random-init controls, separating pre-specified settings from sensitivity, stating tie and gallery definitions) continue to apply afterward.
+
+<!-- i18n-source: 05_multimodal_other/README.md blob:c0321fb7a9cec1edbfcc1e41bb0dd7ae1e7c85cd -->

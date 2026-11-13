@@ -15,9 +15,34 @@ project:
             - file: 00_orientation/self_assessment.en.md
             - file: 00_orientation/paper_note_template.en.md
             - file: 00_orientation/experiment_log_template.en.md
+        - title: 01 Foundations
+          children:
+            - file: 01_foundations/README.en.md
+            - file: 01_foundations/exercises.en.md
+        - title: 02 Protein
+          children:
+            - file: 02_protein/README.en.md
+            - file: 02_protein/exercises.en.md
+        - title: 03 DNA · Genome · RNA
+          children:
+            - file: 03_dna_genome/README.en.md
+            - file: 03_dna_genome/exercises.en.md
+        - title: 04 Single-cell
+          children:
+            - file: 04_single_cell/README.en.md
+            - file: 04_single_cell/exercises.en.md
+        - title: 05 Multimodal · Other
+          children:
+            - file: 05_multimodal_other/README.en.md
+            - file: 05_multimodal_other/exercises.en.md
+        - title: 06 Advanced
+          children:
+            - file: 06_advanced_research/README.en.md
+            - file: 06_advanced_research/exercises.en.md
         - title: 07 Capstone
           children:
             - file: 07_capstone/README.en.md
+            - file: 07_capstone/exercises.en.md
             - title: Templates
               children:
                 - file: 07_capstone/templates/proposal_template.en.md
@@ -30,6 +55,18 @@ project:
                 - file: 07_capstone/examples/track_E_candidates.en.md
                 - file: 07_capstone/examples/dry_runs/README.en.md
                 - file: 07_capstone/examples/dry_runs/track_E_traitgym.en.md
+        - title: Resources
+          children:
+            - file: resources/reading_list.en.md
+            - file: resources/glossary.en.md
+            - file: resources/benchmarks.en.md
+            - title: Cheatsheets
+              children:
+                - file: resources/cheatsheets/README.en.md
+                - file: resources/cheatsheets/01_embedding_recipes.en.md
+                - file: resources/cheatsheets/02_metrics_and_stats.en.md
+                - file: resources/cheatsheets/03_splits_and_leakage.en.md
+                - file: resources/cheatsheets/04_compute_and_memory.en.md
     - title: 00 Orientation
       children:
         - file: 00_orientation/README.md

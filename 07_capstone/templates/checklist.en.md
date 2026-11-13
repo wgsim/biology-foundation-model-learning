@@ -57,6 +57,5 @@ This collects what was **actually wrong, or easy to get wrong,** in modules 01â€
 - [ ] Wrote down the dual-use review and the decision on the scope of release. Marked the items that need a check against your institution's policy (06)
 - [ ] Did not do downloads or installs that the user had not approved (all modules)
 
-<!-- i18n-allow-numbers: 20, 200000 -->
 
 <!-- i18n-source: 07_capstone/templates/checklist.md blob:bdde6aa53894b05ca6ffbe6ea38ab0ed2b0f103e -->

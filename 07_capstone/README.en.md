@@ -26,7 +26,7 @@
 | M5 | Report | `report` ([template](templates/report_template.en.md)) | 3–4 |
 | M6 | Self-assessment with the checklist and rubric, independent review and how it was handled | Review-handling record, re-run | 2–3 |
 
-**Deliverables**: the proposal, the notebook (runs from start to finish), the report, the rubric score sheet, and the record of how the independent-review points were handled. The evaluation criteria for each milestone are in [exercises.md](exercises.md).
+**Deliverables**: the proposal, the notebook (runs from start to finish), the report, the rubric score sheet, and the record of how the independent-review points were handled. The evaluation criteria for each milestone are in [exercises.en.md](exercises.en.md).
 
 ---
 
@@ -49,7 +49,7 @@
 
 ## 3. Track E: paper reproduction protocol
 Pineau et al. (arXiv:2003.12206, abstract) describe reproducibility as obtaining results similar to those reported in the paper using the same code and data (where possible). This protocol narrows that definition to the *claim unit*.
-1. **Choose a paper** (using the [paper note template](../00_orientation/paper_note_template.en.md) and 3-pass reading): choose a paper that satisfies all 4 of the following conditions. ① The core claim is one sentence. ② Code, data and weights are public, and you have **checked the license**. ③ The computation fits within 16–20 hours (🟢 Mac / 🟡 Colab). ④ You can identify the **claim unit** to reproduce (one table cell or one figure). Choose from the ✅ papers in the [reading_list](../resources/reading_list.md), but check directly whether the code is public. There is a [candidate survey](examples/track_E_candidates.en.md) in which the author applied the 4 conditions to 5 candidate papers. It is an example, not the right answer.
+1. **Choose a paper** (using the [paper note template](../00_orientation/paper_note_template.en.md) and 3-pass reading): choose a paper that satisfies all 4 of the following conditions. ① The core claim is one sentence. ② Code, data and weights are public, and you have **checked the license**. ③ The computation fits within 16–20 hours (🟢 Mac / 🟡 Colab). ④ You can identify the **claim unit** to reproduce (one table cell or one figure). Choose from the ✅ papers in the [reading_list](../resources/reading_list.en.md), but check directly whether the code is public. There is a [candidate survey](examples/track_E_candidates.en.md) in which the author applied the 4 conditions to 5 candidate papers. It is an example, not the right answer.
 2. **Decide the reproduction level**: there are **L1 numerical reproduction** (with public code and weights, the number is within the tolerance), **L2 re-implementation** (implement the core pipeline yourself and compare it with L1), and **L3 variant verification** (change the split, baseline or ablation and see whether the claim holds). The recommendation is L1 plus one L3.
 3. **Define the tolerance before you see the primary reproduction result.** If the paper gives an interval, use it. If it does not, first measure and record the *variation from running the original code with only the seed changed* (before seeing the primary result), and set the tolerance from that variation. Do not choose a value such as "±0.02" after seeing the result.
 4. **Deviation log**: record the data version, preprocessing, environment, seed and any details that were not in the paper, with dates.
@@ -143,7 +143,7 @@ Accepting every point without verification is a red flag in the rubric. Reviewer
 ## 10. Files
 | File | Contents |
 |---|---|
-| [exercises.md](exercises.md) | Exercises for milestones M1–M6 and the evaluation criteria |
+| [exercises.en.md](exercises.en.md) | Exercises for milestones M1–M6 and the evaluation criteria |
 | [templates/proposal_template.en.md](templates/proposal_template.en.md) | Preregistered proposal |
 | [templates/capstone_notebook_template.ipynb](templates/capstone_notebook_template.ipynb) | A runnable skeleton + the track A demo (🟢, about 20 seconds) |
 | [templates/report_template.en.md](templates/report_template.en.md) | Report structure |
@@ -158,6 +158,6 @@ Accepting every point without verification is a red flag in the rubric. Reviewer
 - Notebooks are committed to the repository **without outputs**. There are no files to download and nothing to install.
 
 ## Wrap-up
-This module completes modules 00–07 of the 18-week curriculum. The [glossary](../resources/glossary.md), the [benchmark map](../resources/benchmarks.md) and the [cheatsheets](../resources/cheatsheets/) in `resources/`, and the full link and citation check, were added and run afterward. **What remains** is running on a cluster (SLURM), a learner pilot, and reproducing the rest of the tables and figures of track E (some were read and compared) and the score-generation step. The checklist so far applies to this repository itself as well. If something is missing, leave an issue so that it can be filled in.
+This module completes modules 00–07 of the 18-week curriculum. The [glossary](../resources/glossary.en.md), the [benchmark map](../resources/benchmarks.en.md) and the [cheatsheets](../resources/cheatsheets/) in `resources/`, and the full link and citation check, were added and run afterward. **What remains** is running on a cluster (SLURM), a learner pilot, and reproducing the rest of the tables and figures of track E (some were read and compared) and the score-generation step. The checklist so far applies to this repository itself as well. If something is missing, leave an issue so that it can be filled in.
 
 <!-- i18n-source: 07_capstone/README.md blob:b3eba9b5553b0d25f695e47d1767239c73c11831 -->

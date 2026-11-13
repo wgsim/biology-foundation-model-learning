@@ -40,11 +40,11 @@ scaffold 분할	scaffold split		from resources/glossary.md
 기증자 단위 분할	donor-level split		from resources/glossary.md
 transductive 적합	transductive fitting		from resources/glossary.md
 오염	contamination		from resources/glossary.md
-무작위 초기화 대조군	random-init control		from resources/glossary.md
+무작위 초기화 대조군	random-init control|random-initialization control		from resources/glossary.md
 음성 대조	negative control		from resources/glossary.md
 선택 효과	selection effect		from resources/glossary.md
 짝지은 비교	paired comparison		from resources/glossary.md
-그룹 부트스트랩	group bootstrap		from resources/glossary.md
+그룹 부트스트랩	group bootstrap|group-bootstrap		from resources/glossary.md
 조건부 구간	conditional interval		from resources/glossary.md
 Spearman 상관	Spearman correlation		from resources/glossary.md
 균형정확도	balanced accuracy		from resources/glossary.md
@@ -58,7 +58,7 @@ Spearman 상관	Spearman correlation		from resources/glossary.md
 적합도	fitness		from resources/glossary.md
 상위성	epistasis		from resources/glossary.md
 de novo 설계	de novo design		from resources/glossary.md
-임상 병원성 예측	clinical variant pathogenicity prediction		from resources/glossary.md
+임상 병원성 예측	clinical variant pathogenicity prediction|clinical pathogenicity prediction		from resources/glossary.md
 참조 게놈	reference genome		from resources/glossary.md
 프로모터	promoter		from resources/glossary.md
 인핸서	enhancer		from resources/glossary.md
@@ -93,8 +93,7 @@ Butina 군집	Butina clustering|Butina clusters|Butina cluster		from resources/g
 접근 승인(gated) 모델	gated model		from resources/glossary.md
 모델 카드	model card		from resources/glossary.md
 데이터시트	datasheet for datasets		from resources/glossary.md
-라이선스 근거	license evidence		from resources/glossary.md
-⚠️ 미검증	사용 전 직접 확인해야 한다		from resources/glossary.md
+라이선스 근거	license evidence|license grounds		from resources/glossary.md
 시험 실행	dry run|dry-run|rehearsal	count	author's own rehearsal, not a learner pilot
 학습자 파일럿	learner pilot|pilot with learner|pilot of learner		
 음성 대조	negative control	count	
@@ -105,7 +104,7 @@ re:(?<![가-힣])지지	supported|support	count	verdict word; not counted when g
 말할 수 없	cannot say|can't say|cannot be said|cannot conclude|cannot claim|no conclusion|nothing can be said	count	verdict category
 가설	hypothes		
 확인하지 못|미확인|미검증	could not verify|could not be verified|could not confirm|could not be confirmed|could not check|could not be checked|cannot be verified|cannot verify|did not verify|did not confirm|not verified|not confirmed|not checked|unable to verify|unverified|unconfirmed|unvalidated|not validated|unknown|not known|not assessed|not determined|did not assess	count	caveat family: an unconfirmed statement must stay unconfirmed
-하지 않은 것	not done|did not do|what was not|left undone|not covered|not performed|were not|was not|not been		
+하지 않은 것	not done|did not do|what was not|left undone|not covered|not performed|was not done|were not done|not been done|was not run|were not run|not run		
 한계	limitation|limit|caveat|shortcoming		
 사전 등록	preregistration|pre-registration|preregistered|pre-registered|preregister|pre-register		
 사전 지정	pre-specified|prespecified|specified before|fixed before|set before|defined before|decided before|stated before|written before|chosen before|determined before		
@@ -113,7 +112,7 @@ re:(?<![가-힣])지지	supported|support	count	verdict word; not counted when g
 사후 분석	post-hoc|post hoc|after the fact|retrospective		
 대리 지표	proxy		
 주장 단위	claim unit|unit of claim|claim-level unit|unit to reproduce		
-재현	reproduc|replicat		
+re:재현(?!율)	reproduc|replicat		
 판정	verdict|judg|ruling|decision		
 결정 규칙	decision rule		
 기준선	baseline		

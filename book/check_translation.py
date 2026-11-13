@@ -42,6 +42,9 @@ LINK = re.compile(r'\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)')
 AUTO = re.compile(r"<(https?://[^>\s]+)>")
 CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 NUM = re.compile(r"\d+(?:\.\d+)?")
+SCALE_KO = re.compile(r"(?<![A-Za-z\d.,])(\d+(?:[.,]\d+)*)\s*((?:천|만|억|조){1,2})(?![큼족])")
+SCALE_EN = re.compile(r"(\d+(?:[.,]\d+)*)\s*(thousand|million|billion|trillion)\b", re.I)
+SCALES = {"천": 10**3, "만": 10**4, "억": 10**8, "조": 10**12, "thousand": 10**3, "million": 10**6, "billion": 10**9, "trillion": 10**12}
 SYMBOLS = "⚠†‡✏✅❌★◆○🟢🟡🔴①②③④⑤⑥⑦⑧⑨⑩"
 
 
@@ -99,6 +102,18 @@ def norm_target(t):
     return p or "#"
 
 
+def scaled(m):
+    """2,300만 / 23 million 처럼 단위어가 붙은 수를 같은 정수로 바꿔 한국어와 영어의 숫자를 맞춘다."""
+    try:
+        unit = m.group(2).lower()
+        mult = 1
+        for u in ([unit] if unit in SCALES else list(unit)):  # 천만 = 천 x 만
+            mult *= SCALES[u]
+        return str(int(round(float(m.group(1).replace(",", "")) * mult)))
+    except ValueError:
+        return m.group(0)
+
+
 def facts(lines):
     text = re.sub(r"<!--.*?-->", "", "\n".join(lines), flags=re.S)
     tables, cur, items, quotes = [], None, 0, 0
@@ -119,6 +134,7 @@ def facts(lines):
     links = Counter(norm_target(t) for t in LINK.findall(text) + AUTO.findall(text))
     body = LINK.sub(lambda m: m.group(0)[: m.group(0).index("](") + 2] + ")", text)
     body = re.sub(r"https?://\S+", "", AUTO.sub("", body))
+    body = SCALE_EN.sub(scaled, SCALE_KO.sub(scaled, body))
     body = re.sub(r"(?<=\d),(?=\d{3})", "", body)
     return {"tables": tables, "items": items, "quotes": quotes, "links": links,
             "nums": Counter(NUM.findall(body)), "codes": [m.group(2).strip() for m in CODE.finditer(body)],

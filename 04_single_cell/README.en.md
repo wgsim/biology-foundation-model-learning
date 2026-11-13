@@ -1,0 +1,201 @@
+# 04. Single-cell — Single-cell Foundation Models and Critical Evaluation
+
+> **English translation.** AI-assisted translation of the [Korean original](README.md). The Korean original is authoritative and may be newer. Links to pages without an English version open the Korean original.
+
+**Duration**: Weeks 10–12 (3 weeks, about 24–30 hours) · **Compute tier**: 🟢 3 local Mac (MPS/CPU) notebooks
+**Prerequisites**: [module 01](../01_foundations/) (tokenization, pitfalls of evaluation), [module 02](../02_protein/) (probe, bootstrap), [module 03](../03_dna_genome/) (how to read critical evaluations).
+
+> Notation: † marks a statement that must be checked directly in the paper text or the model card. In this repository, only the abstract and model-card level was checked. The cited papers are in section 04 of the [reading_list](../resources/reading_list.en.md). This is information as of 2026-11, and models change quickly, so check the model card before you use one.
+
+---
+
+## Learning goals
+1. Explain the characteristics of scRNA-seq data (sparsity, depth, batch, label uncertainty), and compare the **design choices for turning an unordered expression vector into a token sequence**.
+2. Implement Geneformer's **rank value encoding** yourself and confirm its properties (scale invariance, discarding value information, dependence on the corpus median) numerically.
+3. Compare the representations, objectives and scale of Geneformer, scGPT, scFoundation and UCE, **separating confirmed facts from statements marked †**.
+4. Compare the **zero-shot cell embeddings** of pretrained models fairly with PCA, Harmony and scVI by a **donor-level split**, batch-mixing metrics and bootstrap intervals.
+5. Verify **what the embeddings depend on** with depth changes and input ablations, and explain that the pretraining task (masked gene prediction) can offer easy cues.
+6. Summarize accurately the claims of the critical evaluation papers (Kedzierska 2025, Ahlmann-Eltze 2025), but **do not generalize them into a failure of FMs as a whole**.
+
+## Three-week schedule
+| Week | Topic | Notebook | Reading (mainly ★) |
+|---|---|---|---|
+| 10 | Data inspection, implementing rank value encoding, extracting embeddings | [01](notebooks/01_geneformer_tokenize_embed.ipynb) | Geneformer, Wilk 2020 |
+| 11 | zero-shot embeddings vs PCA·Harmony·scVI | [02](notebooks/02_embeddings_vs_baselines.ipynb) | scVI, Harmony, scib, Kedzierska |
+| 12 | Depth robustness·input ablation + deliverable | [03](notebooks/03_robustness_ablation.ipynb) | Ahlmann-Eltze, scGPT, scFoundation, UCE |
+
+**The module deliverable** is one of two. One is a 1-page report that reproduces the comparison table of notebook 02 on **another dataset or tissue that you choose** (exercise 3) and interprets on which metrics the FM leads and trails. The other is a result table that extends the input ablation of notebook 03 to V2 and other data (exercise 2). Start by writing down the design (split, metrics, comparison targets, tuning procedure) in a document **before seeing the results**.
+
+---
+
+## 1. How single-cell data differ from sequences
+- **Unlike sequence data, there is no "order".** A cell is a vector of per-gene counts, and the linear order of the genes has no meaning (chromosomal coordinates are a separate matter). So, to put it into a Transformer, you must decide a **rule for turning a cell into a token sequence**. That rule is the model's assumption (§2).
+- **It is sparse and shallow.** Hundreds to thousands of genes are detected in one PBMC cell. Depending on the platform, even the same cell has a very different detected set. In this module's data (Seq-Well, median about 1,500 counts per cell), **about 77% of the detected genes have a count of 1** (notebook 01).
+- **Batch effects are large.** Systematic differences by donor, sample, platform and time can look as large as the differences between cell types. The evaluation changes depending on what is used as the "batch". In this module's data, **disease status overlaps completely with the donors**, so correcting for batch can also erase the biological signal (notebook 02).
+- **The labels are not the ground truth.** Cell types are usually assigned by people after clustering. The labels in this module (`cell.type.coarse`) are also the annotations of the original paper, and their granularity differs from the CELLxGENE ontology labels (`cell_type`). Label mismatches and rare classes increase the variance of the metrics.
+- **The same data may have been used in pretraining.** Public corpora (Genecorpus, etc.) collect public data such as GEO/SRA, so they can overlap with the evaluation data. In this module too, we **could not confirm** whether Wilk 2020 is included in the corpus.
+
+## 2. Turning cells into token sequences: representation design
+| Approach | Representative model | Idea | What is discarded / risk |
+|---|---|---|---|
+| **Rank-based** (rank value encoding) | Geneformer | After normalizing by depth, divide by the per-gene corpus median and sort in descending order of value to get a **sequence of gene IDs** | The magnitude of values, fine ratios. In low-depth data, genes with count=1 are fixed in the order of the median (notebook 01) |
+| **Value binning + gene tokens** | scGPT† | Adds the gene token embedding and a value embedding of the expression level divided into bins; generative pretraining | Depends on the binning resolution and on gene selection (highly variable genes, etc.) † |
+| **Continuous-value input + fixed gene vocab** | scFoundation† | Keeps about 20,000 genes as a fixed vocab and directly embeds the continuous expression, using read-depth information † | The model structure is asymmetric (encoder-decoder) † |
+| **Gene = protein embedding** | UCE† | An attempt to take the gene representation from protein language model (ESM-2) embeddings in order to generalize across species and gene sets † | Assumes protein sequence similarity, excludes non-coding RNA † |
+
+> † marks statements that need to be checked in the paper text. The facts that this repository confirmed from abstracts are written only in the "Confirmed facts" column of the table in §3.
+
+**Let us work out directly what the rank representation means.** If a cell has gene A (count 5, corpus median 5) and B (count 1, median 0.5), the normalized values are similar for both. The rank keeps only the *relative priority*, so it is explained as being **insensitive to absolute depth**. However, this does not mean that the rank does not change, only that it changes less. When the depth falls, the **detected set changes**, so the token sequence also changes (confirmed quantitatively in notebook 03).
+
+## 3. Model lineage — confirmed facts vs †
+| Model | Confirmed facts (abstract/model-card level) | † Needs checking in the paper text |
+|---|---|---|
+| **Geneformer** (Theodoris 2023, Nature) | An attention-based model pretrained on about 30 million single-cell transcriptomes. Reported that the attention weights encode network hierarchy. Reported gains on fine-tuning tasks with small amounts of data. Model card (HF): **V1-10M** = about 30 million cells · 10M parameters · input 2,048 · vocabulary about 25,000 (protein-coding + non-coding RNA), **V2-104M/316M** = about 100 million cells (Genecorpus-104M, non-cancer) · input 4,096 · vocabulary about 20,000 (protein-coding), and a variant continually trained on the cancer domain (V2-104M_CLcancer) exists. Pretraining masks 15% of the genes. | Details of the in silico perturbation algorithm |
+| **scGPT** (Cui 2024, Nat Methods) | A generative pretrained transformer pretrained on at least 33 million cells. Reported to be applied by transfer learning to cell-type annotation, multi-batch integration, multi-omics integration, perturbation response prediction and gene network inference. | Input/training design such as value binning and attention masks |
+| **scFoundation** (Hao 2024, Nat Methods; bioRxiv 2023) | Preprint abstract: 100 million parameters, trained on at least 50 million human single-cell transcriptomes, applied to gene expression enhancement, drug response and perturbation prediction, etc. | Asymmetric structure, read-depth-aware training |
+| **UCE** (Rosen, bioRxiv) | Preprint abstract: self-supervised learning on cell atlas data, maps new cells into the same embedding space without fine-tuning, and built an integrated large-scale atlas embedding 36 million cells, at least 1,000 cell types and 8 species. **No evidence of journal publication was found.** | Gene representation (uses ESM-2), composition of the training corpus |
+| **scBERT** (Yang 2022, Nat Mach Intell) | A pretrained language model for cell-type annotation (an early reference point). The existence of a Matters Arising in 2024-12 is reported, but its content is unverified. | — |
+
+> The scale numbers in the table above (number of cells, parameters) are **not a ranking for direct comparison between models**: the corpus composition, filtering, species/tissue scope and purposes differ. "A larger corpus = better embeddings" is something to be tested in notebooks 02 and 03, not a premise.
+
+## 4. Geneformer by hand — the core of notebook 01
+We read and rewrote the logic of the official implementation (`TranscriptomeTokenizer`, `EmbExtractor`) († we could not check it against the official package token by token).
+1. Merge the gene IDs into the official Ensembl IDs with a mapping dictionary (duplicates are summed in count). Genes not in the vocabulary are dropped. In this data, about 70% of the 24,505 columns are linked to the vocabulary, and **about 90% of the total counts** are in those columns.
+2. Per-cell depth normalization: $\tilde c_g = c_g / N \times 10^4$ ($N$ = the cell's total count).
+3. Divide by the per-gene corpus median $m_g$ (the median of the non-zero values): $\tilde c_g / m_g$. In this way, genes that are highly expressed everywhere go down, and regulatory genes that are rarely high go up.
+4. Sort the values that are not 0 in descending order to make the **token ID sequence**, and cut from the front. The length is 2,048 for V1 and 4,096 for V2, minus 2 slots for `<cls>`/`<eos>`. The official code handles ties with the `np.argsort` default, but here a stable sort was used.
+5. Cell embedding: by default the **second-to-last layer** (`hidden_states[-2]`), taking the mean over gene positions (V1) or the `<cls>` position (V2 default)†.
+
+**Property checks** (notebook 01): Shuffling the column order, or multiplying the counts by 2, gives the same token sequence (scale and order invariance). On the other hand, **the magnitude of values is discarded.** In this data, 77% of the non-zero entries have count 1, so the relative order of those genes is fixed in the order of the corpus median, independently of the cell.
+
+**Pickle safety.** Geneformer's gene dictionaries are pickle files. Before loading, check the global objects they reference (they reference only numpy scalars and dtypes), and read them with an allow-list `Unpickler` that restricts `find_class`. The notebook shows that a malicious mock pickle is blocked. Remember that, even for a trustworthy repository, a pickle is a code-execution path.
+
+---
+
+## 5. What we saw in this data — summary of the results of notebooks 01–03
+Data: Wilk et al. 2020 PBMC (Seq-Well), 13 people (7 COVID / 6 normal), ≤ 800 cells per donor = 10,400 cells. The labels are the 13 coarse classes of the original paper. All numbers are values from one run with seed 0 on a Mac with MPS/CPU, so **check the full notebook outputs directly**.
+
+| Method | LODO macro-F1 [95% CI, donor bootstrap] | Δ vs PCA | Donor-identification excess accuracy (↓ mixing) | Disease LODO balanced accuracy |
+|---|---|---|---|---|
+| PCA(HVG, 50) | 0.847 [0.797, 0.880] | — | 0.268 | 0.751 |
+| Harmony (donor) | 0.819 [0.772, 0.849] | −0.028 [−0.040, −0.013] | 0.060 | 0.602 |
+| scVI (donor) | 0.847 [0.804, 0.875] | +0.000 [−0.017, +0.024] | 0.140 | 0.605 |
+| Geneformer V1-10M (mean, L-2) | 0.551 [0.485, 0.585] | −0.295 [−0.332, −0.265] | 0.172 | 0.705 |
+| Geneformer V2-104M (`<cls>`, L-2) | 0.811 [0.750, 0.845] | −0.036 [−0.064, −0.018] | 0.253 | 0.764 |
+
+**What we learned (the grounds are in the corresponding sections of the notebooks)**
+1. **First look at what information the token sequence holds** (01). In this shallow data, 77% of the non-zero entries have count 1, and those genes line up in a median order unrelated to the cell. The cell-specific information is effectively only the *detected set* and the positions of the genes with count 2 or more.
+2. **The score of an easy pretraining task is not evidence of knowledge** (01 §5). The top-10 accuracy of masked gene prediction is 71.7% for V1 and 0.03% for the random initialization, so pretraining clearly works. However, even an oracle-type baseline that uses only the order structure and the neighbor information already reaches top-10 of 70.4% and 71.9% at the positions where the order narrows down the candidates (about 60% of all positions) (at the same positions the model gets 76–79%). Conversely, at positions where the answer has count 2 or more, a position-independent frequency prior gets 4% while the model gets 60–69%. The score at these positions is not explained by the order structure. A baseline that uses position was not tested.
+3. **Zero-shot embeddings did not exceed PCA in this data** (02). V2 is close to PCA (Δ −0.037) and V1 is far (Δ −0.296). This is a result obtained with kNN and pre-specified settings on one dataset, and it **does not speak for results with fine-tuning, a probe, or other data.** (Some of these conditions were followed up in the dry runs of module 07 — a logistic head, a new dataset, V1 and V2 fine-tuning, scGPT: [record](../07_capstone/examples/dry_runs/second_halves.md). In summary, no setting exceeded PCA by the pre-specified rule, and V2-104M fine-tuning and scGPT `<cls>` were at a level indistinguishable from PCA. Each is a result obtained with 1 run and 1 seed.)
+4. **The choice of settings is as large as the difference between methods** (02 §5). For V1, the last layer was 0.734, which is 0.18 higher than the 0.551 of the second-to-last layer. If you pick the best after seeing the results, the comparison becomes meaningless.
+5. **A random-initialization control is essential** (02 §5). Even feeding the same token sequence into the same architecture with only random weights gives 0.35. This means that the token sequence itself, which carries the detected set and the order, holds a considerable signal. The difference from the pretrained one, on the same layer, is +0.20 at L-2 and +0.38 at the last layer.
+6. **Read batch mixing together with preservation** (02 §7). The donor-identification excess accuracy of the random-init V1 is 0.060, the same as Harmony, but it cannot identify cell types. The scib-style ASW_batch is clustered in the narrow range 0.92–0.98, and its order did not agree with the kNN-based mixing metric. Harmony mixed best on the kNN metric but was lower than scVI and V2 on ASW_batch.
+7. **Correcting by treating the donor as the batch can also reduce the disease signal** (02 §7). In this data, where disease overlaps completely with the donors, the disease LODO balanced accuracy of Harmony and scVI was 0.60, lower than the 0.75–0.76 of PCA and V2. The intervals partly overlap, so we leave it at the hypothesis level.
+8. **Robustness to shallow queries must be verified separately** (03). When the total counts were reduced to 1/2 and 1/4 by binomial thinning, the macro-F1 of the fold-wise-fitted PCA projection fell from 0.856 to 0.828 and 0.775. V2 fell from 0.799 to 0.742 and 0.531, and V1 from 0.512 to 0.357 and 0.191. The explanation that "rank-based is robust to depth" was **not supported in this simulation.**
+9. **Input ablation** (03 §7). Even with a "detected set only" input, with all the count information erased, V1 got 0.459 and V2 0.731. They fell only by −0.053 [−0.072, −0.031] and −0.068 [−0.089, −0.044] from the 0.512 and 0.799 obtained with the full ranks. This means that the rank information the counts provide does contribute, but the size observed in this data is small, and a considerable part of the embedding signal is tied to the *set of detected genes*. However, this input may differ from the pretraining distribution, and order randomization is an out-of-distribution input, so the interpretation has limits.
+
+> **There are limitations.** This is the result of one dataset, one seed and 13 donors. The labels are the annotations of the original paper, and we could not confirm whether the data is included in the pretraining corpus. The baselines were not tuned, and the FM was evaluated only with zero-shot kNN. Do not generalize this table to "Geneformer is worse than PCA".
+
+## 6. How to read the critical evaluation papers
+- **Kedzierska et al. (Genome Biol 2025)** state in the abstract that they evaluated scGPT and Geneformer **without fine-tuning (zero-shot)**. They report that in some cases these models show reliability problems and can fall behind simpler methods. Notebook 02 of this module looks at the same question — comparing zero-shot embeddings with simple methods — with a different dataset and a different procedure. Let us compare in a table the **differences in data, split, metrics and baselines** of the two evaluations (exercise 5).
+- **Ahlmann-Eltze, Huber, Anders (Nat Methods 2025)** state in the abstract that they compared 5 foundation models and 2 deep-learning models with **deliberately simple baselines** in predicting transcriptome changes after single and double perturbations. They report that none exceeded the baseline. This module has no notebook that uses perturbation data, so we cover it instead as exercise 4, which writes a design document.
+- **Do not generalize.** Both papers are results of *specific tasks and specific settings*: zero-shot embeddings and perturbation prediction. Read them not as "FMs are useless" but as "simple methods are strong in this setting, so let us honestly verify under what conditions FMs give a gain". Conditions such as fine-tuning, small amounts of labels, domain transfer and large-scale atlas mapping may not be covered by these evaluations†.
+- **There is a reason to evaluate the same FM twice.** The pretraining data and the evaluation data may overlap, and the hyperparameters and layer choices of a paper may already be reflected in the reported metrics. Read the critique papers with the same eyes.
+
+## 7. Checklist for evaluating single-cell FMs
+| Item | Check |
+|---|---|
+| split | Split not by random cells but **by donor, study or batch**. Look at generalization to new donors and new studies |
+| Confounding | When batch = donor, first check in a table whether disease, tissue and platform overlap |
+| Labels | The origin of the labels (are they cluster annotations?), agreement of granularity, number of rare classes |
+| baseline | PCA (HVG), batch correction (Harmony/scVI), a random-initialization FM, and simple inputs such as "detected set only". Were the baselines tuned to the same degree? |
+| Information asymmetry | Which method uses batch labels or the whole data (transductive)? |
+| Setting selection | Did you decide layer, pooling and normalization **in advance**? Do not pick the best after seeing the results |
+| Metrics | Look at preservation (classification F1) and mixing (batch) **together**. Do not be fooled by a method that is high on only one. Also check the discriminative power of the metrics and the consistency between metrics (ASW_batch and the kNN-based mixing metric disagreed) |
+| Uncertainty | A bootstrap that matches the unit (donor), **paired** differences between methods |
+| Robustness | Sensitivity to changes in depth, platform and gene set (state that binomial thinning is only a simulation) |
+| Contamination | The possibility that the evaluation data was in the pretraining corpus |
+| Scope | State in the conclusion which of zero-shot / probe / fine-tuning was evaluated |
+
+## 8. Running on Colab (T4 run confirmed, 2026-11-05)
+The 3 notebooks were run from start to finish **without errors** on a Colab **T4 runtime**, in the order 01, 02, 03. The runtime environment was Python 3.13.16, 2 vCPUs, 12 GB RAM, torch 2.11.0+cu130, numpy 2.4.6, scikit-learn 1.6.1, pandas 3.1.1. They were run in turn in the same kernel of the same VM, and the total took about 56 minutes and about 1 compute unit.
+- **Installation**: `scanpy anndata harmonypy scvi-tools scikit-misc`, which are not on Colab, were installed with `colab install` (uv pip) and the kernel was restarted (scanpy 1.12.5, anndata 0.13.4, scvi-tools 1.5.2, harmonypy 2.1.0, scikit-misc 0.5.3 — the same versions as the Mac). The `!pip install` cell inside the notebooks and the `requirements/colab.txt` path were **not used in this verification**. The notebooks have no install cell, so put it in the first cell yourself, or install the same packages beforehand.
+- **How it was run** is as follows. Locally, the cells were run in turn with `colab exec -f <notebook>.ipynb`. Because it is outside the repository, `find_root()` becomes `None`, and the cache is made in the VM's `cache/`. After the sha256 of the data was confirmed to match, the notebook downloaded the data directly on the VM together with the model. Because 02 and 03 read the products of 01, you must run **01, 02 and 03 in the same runtime**.
+- **The run times are for a T4 and 2 vCPUs**: 01 took about 17 minutes (V1-10M 55 seconds, random initialization 65 seconds, V2-104M 788 seconds), 02 about 27 minutes (scVI 757 seconds, evaluation 113 seconds), and 03 about 12 minutes. **The T4 was not faster than the Mac MPS.** For V2-104M inference in fp32, the Mac's last run was 673 seconds (13–14 minutes in an earlier run), and the T4 was 788 seconds. scVI trains on the CPU, so the 757 seconds of Colab's 2 cores was much slower than the Mac's 134 seconds. These times are single-run values and were not measured repeatedly under the same conditions.
+- **Scope of reproduction (compared with the Mac run)**:
+  - Token sequences: the hash (the first 16 characters of the sha256, `d5bf2ce6969e2dd6`) was the same on the Mac and Colab. The mean absolute values of the 8 embeddings agreed to the sixth decimal place, and the sums agreed to a relative error of 6e-6 or less (excluding sums near 0). The output of 01 (including the verification cells and the masked-gene-prediction table) was the same except for versions, warnings and times.
+  - 02: The PCA and Geneformer rows were the same to the third decimal place or within ±0.003 (e.g., V2 KMeans ARI 0.378→0.375), and macro-F1 was the same. **scVI differed even with seed 0**: macro-F1 0.847→0.850, disease LODO balanced accuracy 0.605→0.617, first-epoch ELBO 441.3→460.2. The disease balanced accuracy of Harmony was 0.602→0.604, some other metrics differed by up to about 0.02 (e.g., 0.601→0.619), and the per-type F1 of minor cell types differed by up to about 0.08 (Platelet, scVI 0.80→0.72). The causes (torch/scikit-learn versions, thread count, etc.) were not separated and checked. The order and sign across methods (Geneformer < PCA ≈ scVI, the disease signal of Harmony and scVI < PCA) did not change.
+  - 03: The Geneformer rows were the same and only the PCA rows differed by ±0.002 (1/4-depth macro-F1 0.775→0.773).
+  - Conclusion: **Even with different hardware (MPS/CUDA/CPU) and library versions, the conclusions of these notebooks held, but for a stochastic-training baseline such as scVI the numbers can differ by about ±0.01.** This result is a comparison of one pair of two environments and does not guarantee a tolerance.
+- The notebooks download about 217 MB of CELLxGENE H5AD data and the models from Hugging Face by themselves. Check the license at each source. The Geneformer weights are Apache-2.0, and the data follows the CELLxGENE policy.
+
+## 9. Comprehension check
+
+**Q1.** Why is the relative order of the genes with count=1 in the Geneformer token sequence fixed independently of the cell? What does this mean in shallow data?
+<details><summary>Answer</summary>
+After depth normalization, the value is $c_g / N \times 10^4 / m_g$, and $N$ is a constant within a cell. If all the counts are 1, the magnitude is separated only by $1/m_g$, so the rank equals the ascending order of the corpus median $m_g$. This was the case for all 300 cells checked in notebook 01. So the cell-specific information is only two things: which genes were detected, and where genes with a count of 2 or more are inserted into the ranking. When the depth falls, the fraction of count=1 increases (0.77 → 0.88, notebook 03), and the cell-specific information of the ranking decreases further.
+</details>
+
+**Q2.** Why is it hard to say that the model learned relationships between genes just from a top-10 masked-gene-prediction accuracy in the 70% range?
+<details><summary>Answer</summary>
+Look at the positions where the order narrows down the candidates (about 60% of all positions). A baseline that, without any gene co-expression model, uses only the order structure that "the median of the masked gene lies between the medians of its left and right neighbors" and the detection frequency reaches top-10 of 70.4% for V1 (the model gets 76.2% at the same positions). The pretraining task can give an easy cue, the structure of the encoding itself, so the score is not evidence of knowledge. However, this baseline is an oracle type that uses the neighbor tokens of the cell, and the counts of the answer and its neighbors, that is, whether the answer has count 1, so it is not a comparison under the same conditions as the model. The model's top-1 is 21.8%, higher than the baseline's 12.1%. At positions where the answer has count 2 or more, the position-independent frequency prior is 4.2% while the model is 60.4%. Since there is a part that is not explained by the order structure, it can be taken as a signal that it uses some of the context. However, we do not assert it, because a baseline that uses rank positions was not run.
+</details>
+
+**Q3.** Why use LODO (leaving out one whole donor) instead of a cell-level random split?
+<details><summary>Answer</summary>
+Cells of the same donor share the donor's own batch effects and are very similar to each other. If cells are split at random, the classifier uses donor characteristics to get them right, so generalization to new donors is overestimated. It has the same structure as the leakage seen in module 01. LODO tests "a donor never seen before". In this data, the donor-identification excess accuracy was up to 0.27, which shows that donor information remains in the embeddings.
+</details>
+
+**Q4.** How should the information asymmetry be described when comparing Harmony/scVI with zero-shot Geneformer?
+<details><summary>Answer</summary>
+Harmony and scVI use donor labels as input, and fit, unsupervised, together on the evaluation data including the held-out donor (transductive). Geneformer, on the other hand, only extracts embeddings without additional training on this data. However, we could not confirm whether this data was in the pretraining corpus. So write it as "a comparison of a batch-correction method fitted to the data versus a zero-shot FM", and state that a comparison in which fine-tuning or a probe is attached to the FM is a separate experiment. PCA (HVG), which has no batch correction, is a data-fitted baseline without pretraining and is the simplest comparison target (since PCA and mean centering are also transformations estimated from the data, we do not write that "there is no learning at all").
+</details>
+
+**Q5.** Using this module's evidence, explain why a method that is good only on the metric that the donors are well mixed cannot be called a good method.
+<details><summary>Answer</summary>
+The random-init V1 has a donor-identification excess accuracy of 0.060 within the same cell type, the same as Harmony, but its cell-type macro-F1 is much lower, at 0.354. This is because if there is no information, the donors cannot be distinguished either. So batch mixing must be read together with cell-type preservation metrics such as classification F1 and ARI/NMI. Also, the scib-style ASW_batch is clustered in a narrow range of 0.92–0.98 (width 0.04) for the 5 main comparisons, and its order did not agree with the kNN-based mixing metric. Harmony mixed best on the kNN metric but was lower than scVI and V2 on ASW_batch. Conclusions can disagree from metric to metric.
+</details>
+
+**Q6.** What problem can arise if you correct by treating the donor as the batch when disease overlaps completely with the donors?
+<details><summary>Answer</summary>
+Because every donor-level systematic difference is treated as "batch" and erased, the differences due to disease status can also shrink. In this data, the disease LODO balanced accuracy within the same cell type was 0.751 for PCA, 0.602 for Harmony and 0.605 for scVI. The intervals partly overlap, so we leave it at the hypothesis level. In data where batch and biology are confounded, no method can separate the two. So "the batch effect was reduced" must not be read straight away as "good".
+</details>
+
+**Q7.** Why is picking the best layer/pooling after the fact a problem, and how large was its effect in this module?
+<details><summary>Answer</summary>
+If you choose the setting by the test metric, you get an optimistic value fitted to the test set. It is the same principle as "choose the layer by train CV" in module 03. For V1, the pre-specified setting, the mean over the second-to-last layer, is 0.551, and the best chosen after seeing the results, the mean over the last layer, is 0.734. This difference of 0.18 is more than half the size of the difference from PCA, Δ −0.295. Decide the rule for choosing settings before seeing the results, and report layer and pooling only as a sensitivity analysis.
+</details>
+
+**Q8.** We tested "the rank-based representation is robust to depth" with a binomial thinning experiment. What should you check before generalizing the result?
+<details><summary>Answer</summary>
+You must check four things. First, thinning is a simulation, so it does not represent real platform and depth differences such as per-gene detection bias or ambient RNA. Second, the PCA compared is fitted on a deep reference and then projected, so the log normalization correcting for depth may have favored it. Third, for Geneformer we looked only at zero-shot embeddings and a kNN against the deep reference. It might change if you use depth augmentation that trains with shallow cells mixed in, or attach a probe, but this was not tested. Fourth, there is only one seed and one dataset. So limit the conclusion to "it was not supported in this simulation and with this procedure".
+</details>
+
+**Q9.** Why do Ahlmann-Eltze et al. deliberately use simple baselines, and what generalization must not be made from the results?
+<details><summary>Answer</summary>
+Because, to sort out whether the gain of a complex model comes from an easy problem to begin with or from the simple structure of the data, you need a reference with the fewest assumptions. The "detected set only" ablation of notebook 03 is in the same spirit. However, this is the result for a specific task, perturbation effect prediction, so you must not generalize it to "FMs are useless". Conditions such as fine-tuning, situations with few labels, domain transfer and large-scale mapping may not be covered by this comparison†.
+</details>
+
+---
+
+## 10. Reading (reading_list section 04)
+- Required: Theodoris et al. 2023 (Geneformer) · Cui et al. 2024 (scGPT) · Kedzierska et al. 2025 · Ahlmann-Eltze et al. 2025
+- Baselines and tools: Lopez et al. 2018 (scVI) · Korsunsky et al. 2019 (Harmony) · Luecken et al. 2022 (scib)
+- Advanced: Hao et al. 2024 (scFoundation) · Rosen et al. (UCE, preprint) · Yang et al. 2022 (scBERT) · Roohani et al. 2024 (GEARS) · Qiu et al. 2025 (BioLLM)
+- Data: Wilk et al. 2020 (the PBMC of the notebooks) · Geneformer model card (HF)
+
+## 11. Notebooks
+| # | File | Tier | Time (Mac, only partly measured) | Content |
+|---|---|---|---|---|
+| 01 | [01_geneformer_tokenize_embed](notebooks/01_geneformer_tokenize_embed.ipynb) | 🟢 | V1 68 seconds, V2 embedding 673–816 seconds (run twice, about 15–17 minutes overall, run concurrently with other jobs) | Data inspection, safe pickle loading, implementing rank value encoding and checking its properties, extracting V1/V2/random-init embeddings, checking masked gene prediction |
+| 02 | [02_embeddings_vs_baselines](notebooks/02_embeddings_vs_baselines.ipynb) | 🟢 | scVI training 134 seconds (overall time not measured, varies by run) | PCA·Harmony·scVI vs Geneformer: LODO macro-F1, ARI/NMI, batch mixing, disease signal, sensitivity |
+| 03 | [03_robustness_ablation](notebooks/03_robustness_ablation.ipynb) | 🟢 | V2 embedding 219 seconds + 253 seconds (overall time not measured, varies by run) | Binomial thinning robustness, depth-encoding R², input ablation |
+
+- 02 and 03 read the `.cache/singlecell/` files that 01 makes. The notebooks are committed to the repository **without outputs**.
+- Files downloaded: PBMC H5AD about 217 MB (CELLxGENE), Geneformer V1-10M about 41 MB + V2-104M about 418 MB, gene-dictionary pkl about 8 MB in total. All go to `.cache/` (excluded from git).
+- On the environment, `harmonypy`, `scvi-tools` and `scikit-misc` were added to `requirements/base.txt`. The times above are values from running concurrently with other jobs on an Apple Silicon Mac, so they are not an accurate benchmark.
+
+## Next
+In [module 05](../05_multimodal_other/) we move on to molecules, pathology images and multimodal models. The evaluation habits of this module (donor-level split, random-init control, paired intervals, pre-specified settings) are applied as they are in the later modules too.
+
+<!-- i18n-source: 04_single_cell/README.md blob:27d491108e83466ec503109bdb106fc876032df9 -->

@@ -68,6 +68,14 @@ class Compare(unittest.TestCase):
         e = errors(KO, EN.replace("3380", "3308"))
         self.assertTrue(any("숫자" in m and "3380" in m for m in e))
 
+    def test_scale_words_are_normalised(self):
+        ko = "# 제목\n\n서열 약 2,300만 개와 6.5억 파라미터, 1천/1만/10만 샘플.\n"
+        en = "# Title\n\nAbout 23 million sequences and 650 million parameters, 1,000 / 10,000 / 100,000 samples.\n"
+        self.assertEqual([m for m in errors(ko, en) if "숫자" in m], [])
+        self.assertTrue(any("숫자" in m for m in errors(ko, en.replace("23 million", "22 million"))))
+        self.assertEqual(ct.facts(["약 3천만 세포와 5천만 개"])["nums"], ct.facts(["about 30 million cells and 50 million"])["nums"])
+        self.assertEqual(ct.facts(["보충 그림 S8만 읽고 sha256만 기록했다"])["nums"], ct.facts(["supplementary figure S8 only, sha256 only"])["nums"])
+
     def test_number_allowed(self):
         en = EN.replace("3380", "3308") + "<!-- i18n-allow-numbers: 3380, 3308 -->\n"
         self.assertEqual([m for m in errors(KO, en) if "숫자" in m], [])

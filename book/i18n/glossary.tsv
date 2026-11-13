@@ -17,7 +17,7 @@
 확산 모델	diffusion model		from resources/glossary.md
 토크나이저	tokenizer		from resources/glossary.md
 임베딩	embedding		from resources/glossary.md
-평균 풀링	mean pooling		from resources/glossary.md
+평균 풀링	mean pooling|mean-pooled|mean-pooling		from resources/glossary.md
 선형 probe	linear probe		from resources/glossary.md
 동결	frozen		from resources/glossary.md
 미세조정	fine-tuning		from resources/glossary.md
@@ -31,7 +31,7 @@
 그래디언트 체크포인팅	gradient checkpointing		from resources/glossary.md
 데이터 병렬	data parallel|DDP		from resources/glossary.md
 헤드	head		from resources/glossary.md
-리비전 고정	revision pinning		from resources/glossary.md
+리비전 고정	revision pinning|revision pinned|pinned revision|revision is pinned		from resources/glossary.md
 누출	leakage		from resources/glossary.md
 상동성 분할	homology split		from resources/glossary.md
 위치 블록 분할	position-block split		from resources/glossary.md
@@ -79,7 +79,7 @@ RNA 기반 FM	RNA foundation model		from resources/glossary.md
 Morgan 지문	Morgan fingerprint		from resources/glossary.md
 Tanimoto 유사도	Tanimoto similarity		from resources/glossary.md
 Murcko 골격	Bemis–Murcko scaffold		from resources/glossary.md
-Butina 군집	Butina clustering		from resources/glossary.md
+Butina 군집	Butina clustering|Butina clusters|Butina cluster		from resources/glossary.md
 모달리티	modality		from resources/glossary.md
 모달리티 간극	modality gap		from resources/glossary.md
 거짓 음성	false negative|false-negative	from resources/glossary.md
@@ -99,7 +99,7 @@ Butina 군집	Butina clustering		from resources/glossary.md
 학습자 파일럿	learner pilot|pilot with learner|pilot of learner		
 음성 대조	negative control	count	
 양성 대조	positive control	count	
-지지되지 않음	not supported	count	verdict word
+지지되지 않	not supported	count	verdict word (matches 지지되지 않음/않는다/않았다)
 직접 지지	directly supported	count	verdict word
 re:(?<![가-힣])지지	supported|support	count	verdict word; not counted when glued to a preceding syllable (…해지지 않는다 is not a verdict)
 말할 수 없	cannot say|can't say|cannot be said|cannot conclude|cannot claim|no conclusion|nothing can be said	count	verdict category

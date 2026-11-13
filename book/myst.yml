@@ -24,6 +24,12 @@ project:
                 - file: 07_capstone/templates/report_template.en.md
                 - file: 07_capstone/templates/rubric.en.md
                 - file: 07_capstone/templates/checklist.en.md
+            - title: Examples and dry-run records
+              children:
+                - file: 07_capstone/examples/example_track_A_proposal_and_report.en.md
+                - file: 07_capstone/examples/track_E_candidates.en.md
+                - file: 07_capstone/examples/dry_runs/README.en.md
+                - file: 07_capstone/examples/dry_runs/track_E_traitgym.en.md
     - title: 00 Orientation
       children:
         - file: 00_orientation/README.md

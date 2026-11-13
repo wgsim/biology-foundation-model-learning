@@ -220,6 +220,18 @@ def check_links(text, path):
                 issues.append(("ERROR", path, f"링크 대상이 없다: {t}"))
             elif a and target.suffix == ".md" and target.is_file() and unicodedata.normalize("NFC", unquote(a)) not in slugs(target):
                 issues.append(("ERROR", path, f"링크 앵커에 해당하는 제목이 없다: {t}"))
+    # 번역본(.en.md)이 이미 있는 한국어 문서를 가리키는 링크는 번역이 늦게 생겼을 때 남는 낡은 링크다. 안내 인용문의 원문 링크는 제외한다.
+    for line in re.sub(r"<!--.*?-->", "", text, flags=re.S).split("\n"):
+        if line.lstrip().startswith(">") and "translation" in line.lower():
+            continue
+        for t in LINK.findall(line):
+            p = t.partition("#")[0]
+            if re.match(r"(https?:|mailto:)", t) or not p.endswith(".md") or p.endswith(".en.md"):
+                continue
+            target = (base / unquote(p)).resolve()
+            sib = target.with_name(target.name[:-3] + ".en.md")
+            if target.is_file() and sib.is_file() and "kind:summary" not in sib.read_text(encoding="utf-8"):
+                issues.append(("WARN", path, f"번역본이 있는 원문을 가리키는 링크다. {sib.name}로 바꾼다: {t}"))
     return issues
 
 
@@ -265,7 +277,8 @@ def glossary_issues(ko, en, rows):
         return "\n".join("\n".join(s["lines"]) for s in parse(t)[0])
 
     kt, et = plain(ko), plain(en)
-    kc = count_terms(kt, [(i, [re.compile(re.escape(k)) for k in r["ko"]]) for i, r in enumerate(rows)])
+    ko_pat = lambda k: re.compile(k[3:]) if k.startswith("re:") else re.compile(re.escape(k))
+    kc = count_terms(kt, [(i, [ko_pat(k) for k in r["ko"]]) for i, r in enumerate(rows)])
     ec = count_terms(et, [(i, [en_pattern(v) for v in r["en"]]) for i, r in enumerate(rows)])
     out = []
     for i, r in enumerate(rows):
@@ -326,7 +339,7 @@ def check_pair(ko_rel, en_rel, rows):
         return [("ERROR", en_rel, f"원문이 없다: {ko_rel}")]
     ko, en = ko_p.read_text(encoding="utf-8"), en_p.read_text(encoding="utf-8")
     issues, kind = check_header(en, en_rel)
-    issues += check_links(en, en_p)
+    issues += [(lv, en_rel, m) for lv, _, m in check_links(en, en_p)]
     if kind != "kind:summary":
         en = strip_notice(en)
         issues += compare(ko, en)

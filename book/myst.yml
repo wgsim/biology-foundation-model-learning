@@ -8,6 +8,22 @@ project:
     - title: English
       children:
         - file: README.en.md
+        - file: SETUP.en.md
+        - title: 00 Orientation
+          children:
+            - file: 00_orientation/README.en.md
+            - file: 00_orientation/self_assessment.en.md
+            - file: 00_orientation/paper_note_template.en.md
+            - file: 00_orientation/experiment_log_template.en.md
+        - title: 07 Capstone
+          children:
+            - file: 07_capstone/README.en.md
+            - title: Templates
+              children:
+                - file: 07_capstone/templates/proposal_template.en.md
+                - file: 07_capstone/templates/report_template.en.md
+                - file: 07_capstone/templates/rubric.en.md
+                - file: 07_capstone/templates/checklist.en.md
     - title: 00 Orientation
       children:
         - file: 00_orientation/README.md

@@ -130,6 +130,20 @@ class Links(unittest.TestCase):
             self.assertEqual(len(msgs), 3, msgs)
             self.assertTrue(any("nope" in m for m in msgs) and any("c.md" in m for m in msgs) and any("zzz" in m for m in msgs))
 
+    def test_link_to_korean_original_that_has_a_translation(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            (d / "b.md").write_text("# B\n", encoding="utf-8")
+            (d / "b.en.md").write_text("# B\n\n<!-- i18n-source: b.md blob:" + "0" * 40 + " -->\n", encoding="utf-8")
+            (d / "c.md").write_text("# C\n", encoding="utf-8")
+            (d / "c.en.md").write_text("# C\n\n<!-- i18n-source: c.md kind:summary -->\n", encoding="utf-8")
+            a = d / "a.en.md"
+            text = "# A\n\n> **English translation.** See the [Korean original](a.md).\n\nSee [b](b.md) and [b2](b.en.md) and [c](c.md).\n"
+            a.write_text(text, encoding="utf-8")
+            msgs = [m for lv, _, m in ct.check_links(text, a) if lv == "WARN"]
+            self.assertEqual(len(msgs), 1, msgs)
+            self.assertIn("b.md", msgs[0])
+
     def test_duplicate_heading_slugs(self):
         self.assertEqual(ct.slug_list([(2, "Same"), (2, "Same")]), ["same", "same-1"])
 
@@ -155,6 +169,11 @@ class Glossary(unittest.TestCase):
         ko = "이것은 확인하지 못했다. 저것은 미확인이다."
         out = ct.glossary_issues(ko, "This is true. That is also true.", self.rows)
         self.assertTrue(any("확인하지 못" in m for _, _, m in out), out)
+
+    def test_regex_term_skips_false_hits(self):
+        rows = [{"ko": ["re:(?<![가-힣])지지"], "en": ["supported", "support"], "count": True}]
+        self.assertEqual(ct.glossary_issues("항상 공정해지지는 않는다.", "It is not always fair.", rows), [])
+        self.assertTrue(ct.glossary_issues("가설을 지지한다.", "It holds.", rows))
 
     def test_term_absent(self):
         out = ct.glossary_issues("시험 실행을 했다.", "We ran it.", self.rows)

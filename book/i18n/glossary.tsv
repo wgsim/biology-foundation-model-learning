@@ -1,7 +1,7 @@
 # Translation glossary (Korean -> English) for the English version of this course. Read by book/check_translation.py.
 # Columns (tab separated): ko[|ko ...] / English variants separated by | (the first one is the preferred translation) / flags / note.
 # flags: count = the English text must use these terms at least as often as the Korean text does. A term with no flag only has to appear once.
-# Matching: Korean terms match as substrings. English variants of 4+ letters also match inflections (reproduc matches reproduction), shorter ones match exactly.
+# Matching: Korean terms match as substrings (a Korean term written as re:PATTERN is a regular expression, used when a plain substring gives false hits, e.g. 지지 inside 공정해지지). English variants of 4+ letters also match inflections (reproduc matches reproduction), shorter ones match exactly.
 # Later rows override earlier rows with the same Korean term. The first block is taken from resources/glossary.md, the second block adds the vocabulary of the process documents.
 # Style: American spelling, ISO dates, numbers and units unchanged. Keep the markers (green/yellow/red circles, warning sign, dagger, pencil, check marks) exactly as in the Korean text.
 # Verdict words: 지지 -> supported, 지지되지 않음 -> not supported. A statement that the Korean text marks as unconfirmed must never become a confirmed one in English.
@@ -52,7 +52,7 @@ Spearman 상관	Spearman correlation		from resources/glossary.md
 사전 등록	pre-registration		from resources/glossary.md
 결정 규칙	decision rule		from resources/glossary.md
 민감도 분석	sensitivity analysis		from resources/glossary.md
-효과 크기	effect size		from resources/glossary.md
+효과 크기	effect size|effect-size	from resources/glossary.md
 재현성	reproducibility		from resources/glossary.md
 아미노산 서열	amino-acid sequence		from resources/glossary.md
 적합도	fitness		from resources/glossary.md
@@ -82,7 +82,7 @@ Murcko 골격	Bemis–Murcko scaffold		from resources/glossary.md
 Butina 군집	Butina clustering		from resources/glossary.md
 모달리티	modality		from resources/glossary.md
 모달리티 간극	modality gap		from resources/glossary.md
-거짓 음성	false negative		from resources/glossary.md
+거짓 음성	false negative|false-negative	from resources/glossary.md
 전체 슬라이드 이미지	whole-slide image|WSI		from resources/glossary.md
 에이전트	agent		from resources/glossary.md
 희소 오토인코더	sparse autoencoder|SAE		from resources/glossary.md
@@ -101,7 +101,7 @@ Butina 군집	Butina clustering		from resources/glossary.md
 양성 대조	positive control	count	
 지지되지 않음	not supported	count	verdict word
 직접 지지	directly supported	count	verdict word
-지지	supported|support	count	verdict word
+re:(?<![가-힣])지지	supported|support	count	verdict word; not counted when glued to a preceding syllable (…해지지 않는다 is not a verdict)
 말할 수 없	cannot say|can't say|cannot be said|cannot conclude|cannot claim|no conclusion|nothing can be said	count	verdict category
 가설	hypothes		
 확인하지 못|미확인|미검증	could not verify|could not be verified|could not confirm|could not be confirmed|could not check|could not be checked|cannot be verified|cannot verify|did not verify|did not confirm|not verified|not confirmed|not checked|unable to verify|unverified|unconfirmed|unvalidated|not validated|unknown|not known|not assessed|not determined|did not assess	count	caveat family: an unconfirmed statement must stay unconfirmed
@@ -146,7 +146,7 @@ Butina 군집	Butina clustering		from resources/glossary.md
 접근 승인	gated|access approval|approval|consent		
 이중 용도	dual-use|dual use		
 갤러리	gallery		
-동점	tie		
+동점	tie|ties		
 상동성	homolog		
 가족	family|families		
 누출	leak		

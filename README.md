@@ -3,7 +3,7 @@
 생물학 foundation model(FM)을 **중급에서 전문가 수준**까지 혼자 학습하기 위한 자료다.
 대상은 ML·생물학 기초가 이미 있는 학습자이고, 형식은 Markdown 강의노트와 Jupyter 실습이다.
 
-English: [README.en.md](README.en.md)
+웹 책(목차·검색 지원): <https://wgsim.github.io/biology-foundation-model-learning/> · English: [README.en.md](README.en.md)
 
 ## 실행 등급
 | 표시 | 환경 |

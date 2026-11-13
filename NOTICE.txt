@@ -1,0 +1,5 @@
+This site was generated with Jupyter Book 2 (MyST).
+The JavaScript and CSS bundles (for example under /_assets and the *.thebe-*.js files) are
+third-party open-source components of those projects and keep their own licenses.
+See https://github.com/jupyter-book/mystmd and https://github.com/jupyter-book/myst-theme.
+The curriculum itself (code and text) is licensed under the MIT License. See LICENSE.txt.

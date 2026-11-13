@@ -1,0 +1,39 @@
+# Track E Candidate Paper Survey (2026-11-09)
+
+> **English translation.** AI-assisted translation of the [Korean original](track_E_candidates.md). The Korean original is authoritative and may be newer. Links to pages without an English version open the Korean original.
+
+This is a record of applying the 4 selection conditions of [Capstone README §3](../README.en.md#h-928fbe81) to the [비판] (critique) and [벤치마크] (benchmark) papers in the [reading_list](../../resources/reading_list.en.md), in order to **narrow down the candidates for the dry run**.
+
+> **What this record is**
+> - **A candidate survey, not a reproduction.** There was no new download, installation or computation. Public repository, model and dataset pages (GitHub API, Hugging Face API, README files) were read, and the files that were read were not saved.
+> - **What was confirmed is separated from ⚠️ (what could not be confirmed).** At the time of this survey, the paper bodies and tables had not been read. The TraitGym main text was read afterward (see the dry-run record). The claim sentences and numbers must be checked directly by the learner with the 3-pass method.
+> - A learner's track E is a paper the learner chooses. What follows are *the candidates the author would use for the dry run*, not an answer key for learners.
+
+> **Follow-up**: The 1st-choice candidate, E-1, was [dry-run](dry_runs/track_E_traitgym.en.md). The 22 public metric CSV files were reproduced, and 2,058 B were downloaded after approval. After that, the paper's main text was read and 7 claims were checked.
+
+## The 4 conditions
+① The core claim is one sentence. ② Code, data and weights are public, and you have **checked the license**. ③ The computation fits within 16–20 hours (🟢 Mac / 🟡 Colab). ④ You can identify the **claim unit** to reproduce (one table cell or one figure).
+
+## Candidate comparison
+| Candidate | ② Code, data, license (what was confirmed) | ③ Computation | ④ Claim unit | Verdict |
+|---|---|---|---|---|
+| **E-1 TraitGym** (Benegas et al. 2025, bioRxiv 10.1101/2025.02.11.637758) | Repository `songlab-cal/TraitGym` **MIT** (confirmed by the API, 5.3 MB, updated 2026-06), HF dataset `songlab/TraitGym` **MIT** (confirmed on the card). Not only the score files but also the **metric CSVs are public**: `mendelian_traits_matched_9/AUPRC_by_chrom_weighted_average/all/` has 81 files, one per model (14 KB or less in total). The snapshot in this repository's cache (`1fde19555fe8…`) is the same as the API's current revision | 🟢 The 17 scores are already in the cache, so recomputing the metrics takes CPU minutes. Other scores need more files to be downloaded (the whole dataset is about 7.1 GB (the sum of the sizes in the HF file listing); only what is needed) | One `score ± se` cell in `…/AUPRC_by_chrom_weighted_average/all/<model>.csv` (e.g., one file has a `model,metric,score,se` header and one line) | **Recommended 1st choice** |
+| **E-2 ProteinGym** (Notin et al. 2023, bioRxiv 10.1101/2023.12.07.570727) | Repository `OATML-Markslab/ProteinGym` **MIT** (93.7 MB). The public metric table `benchmarks/DMS_zero_shot/substitutions/Spearman/DMS_substitutions_Spearman_DMS_level.csv` (141 KB) has per-assay scores and columns such as ESM2 (8M·35M·150M·650M·3B·15B) and ESM-1v (header checked). The data and ESM-2 8M–650M are in the cache | 🟢–🟡 Scoring with 650M scales with the number and length of assays (**not measured** ⚠️) | One per-assay Spearman cell (e.g., DN7A × ESM2 650M) or the mean by type | 2nd choice. **The license of the individual DMS datasets is unverified** ⚠️ (the same state as the template); the ESM-2 scoring method (masked/wt marginals) and the handling of long sequences need to be checked in the code ⚠️ |
+| **E-3 Ahlmann-Eltze et al. 2025** (Nat Methods; 10.1038/s41592-025-02772-6) | Repository `const-ae/linear_perturbation_prediction-Paper` **MIT** (63.8 MB; archived at Zenodo DOI 10.5281/zenodo.14832393). The analysis is in **R scripts**, and there are separate benchmark scripts. This Mac has R (`/usr/local/bin/R`) | ⚠️ The size of the needed data and how to obtain it could not be confirmed. Re-running the deep-learning models may need a GPU and a long time (unverified) | Error comparison between the linear baseline and the models (one figure or one table cell) | Needs more investigation. It is the closest to the course theme ("FMs do not always win"), but it cannot be judged now |
+| **E-4 Kedzierska et al. 2025** (Genome Biol; 10.1186/s13059-025-03574-x) | Repository `microsoft/zero-shot-scfoundation` **MIT**. README: developed and tested on **Linux + NVIDIA GPU + Docker**; scGPT depends on flash-attention (strict GPU requirements); pinned to specific commits of Geneformer and scGPT; the data is one figshare file (size ⚠️) | ✗ Probably does not fit this Mac (MPS) or a Colab T4 (the list of compatible GPUs could not be checked ⚠️) | Table of clustering and batch metrics | Exclusion recommended (reconsider if a GPU cluster becomes available) |
+| **E-5 Praski et al. 2025** (arXiv, molecular-embedding benchmark) | **Could not find** a code repository (one GitHub repository search returned no results — not a thorough survey) ⚠️ | — | — | Excluded |
+
+## Recommended: E-1 TraitGym (L1 + L3)
+- **Reason**: (1) There is almost no computation. The scores are in the cache. (2) The public metric CSV is the "answer", so the reference for the L1 reproduction is clear. (3) It can resolve the † marker in the module 03 notebook. The notebook implemented the chromosome-weighted AUPRC itself and wrote that "it may differ from the official definition†".
+- **Preliminary check (one value)**: `auprc_chrom_w` in module 03 notebook 02 gave 0.654 for GPN-MSA |LLR|, and the public CSV (`GPN-MSA_absLLR.plus.score`) has AUPRC 0.6542 (se 0.0450). They match. The other 16 scores were not compared. This is the L1 content of the dry run.
+- **L1 reproduction**: Compute `AUPRC_by_chrom_weighted_average` directly from the 17 scores in the cache and compare it with the public `score`. **Decide the tolerance before seeing the results.** The computation is deterministic and has no seed variation (so the "seed variation" of protocol step 3 does not apply), so the proposal is to use the *public se* and the rounding level (4 decimal places) as the criterion. Follow the sign in the file name (`.plus`/`.minus`) and the rule of the `score` column.
+- **L3 variant verification (one)**: Check whether the ranking holds in the public consequence-subset CSVs (`3_prime_UTR_variant/`, etc.), or compare the match_group-level bootstrap with the chromosome-level method.
+- **Approval needed (to run it)**: Downloading the 17 metric CSVs (about 100 B each) and (for L3) a few subset CSVs needs approval. The total is 100 KB or less and nothing is installed. The Snakemake workflow (`workflow/`) is only read, and the metric definition is ported to Python (`snakemake` is not installed).
+- **Risks ⚠️**: (a) The public CSVs follow the current dataset release, so the version may differ from the preprint tables (the repository has separate `mendelian_traits_v21_` and `v22_matched_9` folders). (b) The details of the metric definition (chromosome weights, NaN handling) are settled only by reading `workflow/`. (c) The paper's claim sentence was not read in this survey. The learner's procedure (3-pass reading) must set it directly.
+
+## What this survey did not do
+- Reading the paper body, figures and tables, fixing the claim sentence, and running a reproduction (other than the single-value L1 comparison above) were not done.
+- The size of the E-3 data and how to obtain it, the list of E-4 compatible GPUs, and checking the E-2 scoring code are left as ⚠️.
+- No cross-review was done.
+
+<!-- i18n-source: 07_capstone/examples/track_E_candidates.md blob:fb10ba7d112795e982bf49c6ec1c8fa884cf4aa4 -->

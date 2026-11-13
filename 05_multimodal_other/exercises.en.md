@@ -13,7 +13,7 @@ Change the Butina similarity cutoff of the cluster split to {0.3, 0.4, 0.5, 0.6}
 A head trained only on canonical SMILES collapsed on randomized notation (Lipophilicity MLM RMSE 0.863 → 1.448). Compare three things. (a) The current method, (b) **averaging the embeddings of K randomized notations** of the training molecules, or training together with them as augmentation, (c) **always normalizing** the input at inference.
 - Evaluation criteria: ① the canonical/randomized-notation test performance of the three methods in one table (scaffold split, 3 repeats), ② the change with K (e.g., 1/5/20), ③ if (c) practically removes the problem, state its assumption (can we control the input SMILES?), ④ the cost relative to ECFP (number of embeddings).
 
-## Exercise 3 — Reproduction on another MoleculeNet task  *(notebook 01, download needed)*
+## Exercise 3 — Reproduction on another MoleculeNet dataset  *(notebook 01, download needed)*
 Pick one of FreeSolv (`SAMPL.csv`, about 32 KB), ClinTox (`clintox.csv.gz`, about 20 KB) and BACE (`bace.csv`, about 3.9 MB) and apply the pipeline of notebook 01. Check the size, source and license, and download after getting the user's approval for the download.
 - Evaluation criteria: ① a data inspection table (invalid SMILES, duplicates, label conflicts, scaffold distribution; for BACE, check whether there is time information), ② a comparison table of 6 representations × 3 splits (with intervals), ③ an interpretation that separates the **same direction / different direction** from the three tasks of notebook 01, ④ a discussion of the possibility that the data overlaps with the ChemBERTa pretraining corpus (PubChem).
 

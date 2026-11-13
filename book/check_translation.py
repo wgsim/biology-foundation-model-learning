@@ -42,7 +42,8 @@ LINK = re.compile(r'\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)')
 AUTO = re.compile(r"<(https?://[^>\s]+)>")
 CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 NUM = re.compile(r"\d+(?:\.\d+)?")
-SCALE_KO = re.compile(r"(?<![A-Za-z\d.,])(\d+(?:[.,]\d+)*)\s*((?:천|만|억|조){1,2})(?![큼족])")
+SCALE_KO = re.compile(r"(?<![A-Za-z\d.,])(?!0\.)(\d+(?:[.,]\d+)*)\s*((?:천|만|억|조){1,2})(?![큼족])")  # 0.02만 은 "~만(only)"이라 제외
+SCALE_KO_COMPOUND = re.compile(r"(?<![A-Za-z\d.,])(\d+)\s*억\s*(\d+(?:[.,]\d+)*)\s*만(?![큼족])")  # 1억 400만
 SCALE_EN = re.compile(r"(\d+(?:[.,]\d+)*)\s*(thousand|million|billion|trillion)\b", re.I)
 SCALES = {"천": 10**3, "만": 10**4, "억": 10**8, "조": 10**12, "thousand": 10**3, "million": 10**6, "billion": 10**9, "trillion": 10**12}
 SYMBOLS = "⚠†‡✏✅❌★◆○🟢🟡🔴①②③④⑤⑥⑦⑧⑨⑩"
@@ -114,6 +115,11 @@ def scaled(m):
         return m.group(0)
 
 
+def scaled_compound(m):
+    """1억 400만 처럼 억과 만이 이어진 수를 하나의 정수로 바꾼다."""
+    return str(int(m.group(1)) * 10**8 + int(round(float(m.group(2).replace(",", "")) * 10**4)))
+
+
 def facts(lines):
     text = re.sub(r"<!--.*?-->", "", "\n".join(lines), flags=re.S)
     tables, cur, items, quotes = [], None, 0, 0
@@ -133,8 +139,9 @@ def facts(lines):
             quotes += 1
     links = Counter(norm_target(t) for t in LINK.findall(text) + AUTO.findall(text))
     body = LINK.sub(lambda m: m.group(0)[: m.group(0).index("](") + 2] + ")", text)
-    body = re.sub(r"https?://\S+", "", AUTO.sub("", body))
-    body = SCALE_EN.sub(scaled, SCALE_KO.sub(scaled, body))
+    body = re.sub(r"`https?://[^`\s]*`", "", AUTO.sub("", body))  # 백틱 안의 URL은 코드 구간째로 뺀다(닫는 백틱까지 지우면 뒤쪽 코드 구간의 짝이 어긋난다)
+    body = re.sub(r"https?://[^\s`]+", "", body)
+    body = SCALE_EN.sub(scaled, SCALE_KO.sub(scaled, SCALE_KO_COMPOUND.sub(scaled_compound, body)))
     body = re.sub(r"(?<=\d),(?=\d{3})", "", body)
     return {"tables": tables, "items": items, "quotes": quotes, "links": links,
             "nums": Counter(NUM.findall(body)), "codes": [m.group(2).strip() for m in CODE.finditer(body)],
@@ -299,7 +306,8 @@ def glossary_issues(ko, en, rows):
     out = []
     for i, r in enumerate(rows):
         k, e = kc[i], ec[i]
-        if k and not e:
+        if k and not e and not (not r["count"] and any(en_pattern(v).search(et) for v in r["en"])):
+            # 영어 변형이 다른 용어 행과 겹쳐(기준선, 베이스라인 -> baseline) 횟수가 앞 행에 모두 잡힌 것은 빠진 것이 아니다. count 용어는 제외
             out.append(("WARN", "glossary", f"원문의 {'/'.join(r['ko'])!r} x{k}에 해당하는 영어({r['en'][0]!r} 등)가 번역에 없다"))
         elif r["count"] and e < k:
             out.append(("WARN", "glossary", f"원문의 {'/'.join(r['ko'])!r}는 {k}번인데 번역의 대응어({r['en'][0]!r} 등)는 {e}번이다. 판정·유보 표현이 빠졌는지 본다"))

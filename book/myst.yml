@@ -54,6 +54,7 @@ project:
                 - file: 07_capstone/examples/example_track_A_proposal_and_report.en.md
                 - file: 07_capstone/examples/track_E_candidates.en.md
                 - file: 07_capstone/examples/dry_runs/README.en.md
+                - file: 07_capstone/examples/dry_runs/second_halves.en.md
                 - file: 07_capstone/examples/dry_runs/track_E_traitgym.en.md
         - title: Resources
           children:

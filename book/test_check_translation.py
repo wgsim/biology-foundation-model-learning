@@ -75,6 +75,14 @@ class Compare(unittest.TestCase):
         self.assertTrue(any("숫자" in m for m in errors(ko, en.replace("23 million", "22 million"))))
         self.assertEqual(ct.facts(["약 3천만 세포와 5천만 개"])["nums"], ct.facts(["about 30 million cells and 50 million"])["nums"])
         self.assertEqual(ct.facts(["보충 그림 S8만 읽고 sha256만 기록했다"])["nums"], ct.facts(["supplementary figure S8 only, sha256 only"])["nums"])
+        # 억과 만이 이어진 수(1억 400만)는 합쳐서 본다. 0.02만처럼 0.으로 시작하는 수 뒤의 '만'은 "~만"(only)이라 단위로 보지 않는다
+        self.assertEqual(ct.facts(["약 1억 400만 세포"])["nums"], ct.facts(["about 104 million cells"])["nums"])
+        self.assertEqual(ct.facts(["효과 크기 ≥ 0.02만 충족했다"])["nums"], ct.facts(["only the effect size ≥ 0.02 was met"])["nums"])
+
+    def test_url_inside_backticks_does_not_unpair_code_spans(self):
+        ko = "# 제목\n\n버킷 `https://example.org/data/`의 `a.csv`(FreeSolv, 32,060 B)를 받았다.\n"
+        en = "# Title\n\nFrom the bucket `https://example.org/data/` I fetched `a.csv` (FreeSolv, 32,060 B).\n"
+        self.assertEqual([m for m in errors(ko, en) if "인라인 코드" in m], [])
 
     def test_number_allowed(self):
         en = EN.replace("3380", "3308") + "<!-- i18n-allow-numbers: 3380, 3308 -->\n"
@@ -182,6 +190,11 @@ class Glossary(unittest.TestCase):
         rows = [{"ko": ["re:(?<![가-힣])지지"], "en": ["supported", "support"], "count": True}]
         self.assertEqual(ct.glossary_issues("항상 공정해지지는 않는다.", "It is not always fair.", rows), [])
         self.assertTrue(ct.glossary_issues("가설을 지지한다.", "It holds.", rows))
+
+    def test_shared_english_variant_is_not_a_missing_term(self):
+        rows = [{"ko": ["기준선"], "en": ["baseline"], "count": False}, {"ko": ["베이스라인"], "en": ["baseline"], "count": False}]
+        self.assertEqual(ct.glossary_issues("기준선과 베이스라인", "The baseline is a baseline.", rows), [])
+        self.assertTrue(ct.glossary_issues("기준선과 베이스라인", "The reference is a standard.", rows))
 
     def test_term_absent(self):
         out = ct.glossary_issues("시험 실행을 했다.", "We ran it.", self.rows)

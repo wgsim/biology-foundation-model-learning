@@ -73,13 +73,12 @@ for f in robots.txt sitemap.xml sitemap_style.xsl; do
 done
 # 이 사이트의 라이선스와, 번들된 제3자 구성요소 안내를 함께 둔다.
 cp "$ROOT/LICENSE" "$S/LICENSE.txt"
-cp "$ROOT/LICENSE-docs.md" "$S/LICENSE-docs.txt"
 cat > "$S/NOTICE.txt" <<'EOF'
 This site was generated with Jupyter Book 2 (MyST).
 The JavaScript and CSS bundles (for example under /_assets and the *.thebe-*.js files) are
 third-party open-source components of those projects and keep their own licenses.
 See https://github.com/jupyter-book/mystmd and https://github.com/jupyter-book/myst-theme.
-The licenses of the curriculum itself are in LICENSE.txt (code) and LICENSE-docs.txt (prose).
+The curriculum itself (code and text) is licensed under the MIT License. See LICENSE.txt.
 EOF
 git -C "$S" init -q -b gh-pages
 git -C "$S" add -A

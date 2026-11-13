@@ -10,3 +10,5 @@ A self-study curriculum on foundation models for biology (protein, DNA/genome, s
 - **Status**: written with an AI coding tool (Claude Code) and cross-reviewed by other AI models (OpenAI Codex and Google Gemini). No human expert has reviewed it, and no learner has piloted it, so treat it as a study log rather than a validated course. Statements that could not be verified are marked `⚠️` or `†`.
 - **Start here**: [SETUP.md](SETUP.md) for the environment, then the 18-week schedule in [README.md](README.md), which links to each module. The web book with a table of contents and search is at <https://wgsim.github.io/biology-foundation-model-learning/>; `bash book/build.sh` builds it locally.
 - **License**: MIT for both code and text (`LICENSE`). Models and datasets that the notebooks download keep their own licenses, and values read from the tables and figures of papers are not stored in this repository.
+
+<!-- i18n-source: README.md kind:summary -->

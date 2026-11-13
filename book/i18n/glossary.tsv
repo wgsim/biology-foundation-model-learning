@@ -1,0 +1,155 @@
+# Translation glossary (Korean -> English) for the English version of this course. Read by book/check_translation.py.
+# Columns (tab separated): ko[|ko ...] / English variants separated by | (the first one is the preferred translation) / flags / note.
+# flags: count = the English text must use these terms at least as often as the Korean text does. A term with no flag only has to appear once.
+# Matching: Korean terms match as substrings. English variants of 4+ letters also match inflections (reproduc matches reproduction), shorter ones match exactly.
+# Later rows override earlier rows with the same Korean term. The first block is taken from resources/glossary.md, the second block adds the vocabulary of the process documents.
+# Style: American spelling, ISO dates, numbers and units unchanged. Keep the markers (green/yellow/red circles, warning sign, dagger, pencil, check marks) exactly as in the Korean text.
+# Verdict words: 지지 -> supported, 지지되지 않음 -> not supported. A statement that the Korean text marks as unconfirmed must never become a confirmed one in English.
+# 시험 실행 -> dry run. Gloss it at first use in each document: the author's own rehearsal of the workflow, not a pilot with learners.
+# 대조 has no fixed row: use comparison, cross-check or check against depending on the sentence; 음성 대조 and 양성 대조 are negative control and positive control.
+# 과제 is exercise in the module exercises files and task elsewhere.
+파운데이션 모델	foundation model|FM		from resources/glossary.md
+사전학습	pretraining		from resources/glossary.md
+자기지도 학습	self-supervised learning		from resources/glossary.md
+마스크 언어모델	masked language model|MLM		from resources/glossary.md
+자기회귀	autoregressive		from resources/glossary.md
+대조학습	contrastive learning		from resources/glossary.md
+확산 모델	diffusion model		from resources/glossary.md
+토크나이저	tokenizer		from resources/glossary.md
+임베딩	embedding		from resources/glossary.md
+평균 풀링	mean pooling		from resources/glossary.md
+선형 probe	linear probe		from resources/glossary.md
+동결	frozen		from resources/glossary.md
+미세조정	fine-tuning		from resources/glossary.md
+분포 이동	distribution shift		from resources/glossary.md
+매개변수 효율 미세조정	parameter-efficient fine-tuning|PEFT		from resources/glossary.md
+스케일링 법칙	scaling law		from resources/glossary.md
+어텐션	attention		from resources/glossary.md
+상태공간 모델	state-space model|SSM		from resources/glossary.md
+장거리 합성곱	long convolution		from resources/glossary.md
+혼합 정밀도	mixed precision		from resources/glossary.md
+그래디언트 체크포인팅	gradient checkpointing		from resources/glossary.md
+데이터 병렬	data parallel|DDP		from resources/glossary.md
+헤드	head		from resources/glossary.md
+리비전 고정	revision pinning		from resources/glossary.md
+누출	leakage		from resources/glossary.md
+상동성 분할	homology split		from resources/glossary.md
+위치 블록 분할	position-block split		from resources/glossary.md
+scaffold 분할	scaffold split		from resources/glossary.md
+시간 분할	time split		from resources/glossary.md
+기증자 단위 분할	donor-level split		from resources/glossary.md
+transductive 적합	transductive fitting		from resources/glossary.md
+오염	contamination		from resources/glossary.md
+무작위 초기화 대조군	random-init control		from resources/glossary.md
+음성 대조	negative control		from resources/glossary.md
+선택 효과	selection effect		from resources/glossary.md
+짝지은 비교	paired comparison		from resources/glossary.md
+그룹 부트스트랩	group bootstrap		from resources/glossary.md
+조건부 구간	conditional interval		from resources/glossary.md
+Spearman 상관	Spearman correlation		from resources/glossary.md
+균형정확도	balanced accuracy		from resources/glossary.md
+갤러리	gallery		from resources/glossary.md
+사전 등록	pre-registration		from resources/glossary.md
+결정 규칙	decision rule		from resources/glossary.md
+민감도 분석	sensitivity analysis		from resources/glossary.md
+효과 크기	effect size		from resources/glossary.md
+재현성	reproducibility		from resources/glossary.md
+아미노산 서열	amino-acid sequence		from resources/glossary.md
+적합도	fitness		from resources/glossary.md
+상위성	epistasis		from resources/glossary.md
+de novo 설계	de novo design		from resources/glossary.md
+임상 병원성 예측	clinical variant pathogenicity prediction		from resources/glossary.md
+참조 게놈	reference genome		from resources/glossary.md
+프로모터	promoter		from resources/glossary.md
+인핸서	enhancer		from resources/glossary.md
+염색질 접근성	chromatin accessibility		from resources/glossary.md
+트랙	track		from resources/glossary.md
+멘델	Mendelian		from resources/glossary.md
+복합 형질	complex traits		from resources/glossary.md
+매칭된 대조군	matched controls		from resources/glossary.md
+개인 간 cis 변이 효과	personal cis-variant effect		from resources/glossary.md
+RNA 기반 FM	RNA foundation model		from resources/glossary.md
+카운트 행렬	count matrix		from resources/glossary.md
+순위값 인코딩	rank value encoding		from resources/glossary.md
+희소성	sparsity		from resources/glossary.md
+배치 효과	batch effect		from resources/glossary.md
+배치 보정	batch correction|integration		from resources/glossary.md
+보존 vs 혼합	bio-conservation vs batch mixing		from resources/glossary.md
+섭동 예측	perturbation prediction		from resources/glossary.md
+Morgan 지문	Morgan fingerprint		from resources/glossary.md
+Tanimoto 유사도	Tanimoto similarity		from resources/glossary.md
+Murcko 골격	Bemis–Murcko scaffold		from resources/glossary.md
+Butina 군집	Butina clustering		from resources/glossary.md
+모달리티	modality		from resources/glossary.md
+모달리티 간극	modality gap		from resources/glossary.md
+거짓 음성	false negative		from resources/glossary.md
+전체 슬라이드 이미지	whole-slide image|WSI		from resources/glossary.md
+에이전트	agent		from resources/glossary.md
+희소 오토인코더	sparse autoencoder|SAE		from resources/glossary.md
+다의성	polysemanticity		from resources/glossary.md
+죽은 특징	dead latent		from resources/glossary.md
+선택 효과 대조	selection-effect control		from resources/glossary.md
+이중 용도	dual use		from resources/glossary.md
+접근 승인(gated) 모델	gated model		from resources/glossary.md
+모델 카드	model card		from resources/glossary.md
+데이터시트	datasheet for datasets		from resources/glossary.md
+라이선스 근거	license evidence		from resources/glossary.md
+⚠️ 미검증	사용 전 직접 확인해야 한다		from resources/glossary.md
+시험 실행	dry run|dry-run|rehearsal	count	author's own rehearsal, not a learner pilot
+학습자 파일럿	learner pilot|pilot with learner|pilot of learner		
+음성 대조	negative control	count	
+양성 대조	positive control	count	
+지지되지 않음	not supported	count	verdict word
+직접 지지	directly supported	count	verdict word
+지지	supported|support	count	verdict word
+말할 수 없	cannot say|can't say|cannot be said|cannot conclude|cannot claim|no conclusion|nothing can be said	count	verdict category
+가설	hypothes		
+확인하지 못|미확인|미검증	could not verify|could not be verified|could not confirm|could not be confirmed|could not check|could not be checked|cannot be verified|cannot verify|did not verify|did not confirm|not verified|not confirmed|not checked|unable to verify|unverified|unconfirmed|unvalidated|not validated|unknown|not known|not assessed|not determined|did not assess	count	caveat family: an unconfirmed statement must stay unconfirmed
+하지 않은 것	not done|did not do|what was not|left undone|not covered|not performed|were not|was not|not been		
+한계	limitation|limit|caveat|shortcoming		
+사전 등록	preregistration|pre-registration|preregistered|pre-registered|preregister|pre-register		
+사전 지정	pre-specified|prespecified|specified before|fixed before|set before|defined before|decided before|stated before|written before|chosen before|determined before		
+허용 오차	tolerance		
+사후 분석	post-hoc|post hoc|after the fact|retrospective		
+대리 지표	proxy		
+주장 단위	claim unit|unit of claim|claim-level unit|unit to reproduce		
+재현	reproduc|replicat		
+판정	verdict|judg|ruling|decision		
+결정 규칙	decision rule		
+기준선	baseline		
+베이스라인	baseline		
+교차 검토	cross-review|cross review|cross-check|cross-examin|cross-validat		
+독립 검토	independent review|independent check|independent reviewer		
+학습자	learner|student|reader|trainee|user		
+제안서	proposal		
+보고서	report		
+루브릭	rubric		
+점검표	checklist		
+캡스톤	capstone		
+트랙	track		
+강의노트	lecture note		
+실행 등급	compute tier|execution tier|run tier|tier|grade		
+과제	exercise|assignment|task|problem|homework		
+분할	split|partition		
+시드	seed		
+군집	cluster		
+양성	positive		
+음성	negative		
+부트스트랩	bootstrap		
+민감도	sensitivity		
+동결	frozen|freez|freeze		
+미세조정	fine-tun|finetun		
+임베딩	embedding		
+가중치	weight		
+라이선스	licen		
+리비전	revision		
+접근 승인	gated|access approval|approval|consent		
+이중 용도	dual-use|dual use		
+갤러리	gallery		
+동점	tie		
+상동성	homolog		
+가족	family|families		
+누출	leak		
+일치	match|agree|consistent|identical|concord|same|equal		
+불일치	mismatch|disagree|inconsisten|discrepan|diverg|differ|not match		
+잠정	provisional|tentative|interim|preliminary		

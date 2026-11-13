@@ -4,8 +4,10 @@ project:
   title: Biology Foundation Model 학습 로드맵
   toc:
     - file: README.md
-    - file: README.en.md
     - file: SETUP.md
+    - title: English
+      children:
+        - file: README.en.md
     - title: 00 Orientation
       children:
         - file: 00_orientation/README.md
